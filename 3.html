@@ -11,19 +11,6 @@
 	<link rel="stylesheet" href="dist/reveal.css">
 	<link rel="stylesheet" href="dist/theme/white.css">
 
-	<style>
-		.reveal section {
-			font-weight: normal !important;
-			font-size: 0.9em !important;
-		}
-		.red {
-			color: red !important;
-		}
-		.blue {
-			color: blue !important;
-		}
-	</style>
-
 	<!-- Theme used for syntax highlighted code -->
 	<link rel="stylesheet" href="plugin/highlight/monokai.css">
 </head>
@@ -80,7 +67,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="6-8|15-20" ><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="4-24" ><script type="text/template">
 							#include <cstdio>
 							#include <stack>
 							using namespace std;
@@ -187,7 +174,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="9-21|23-34" ><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="9-34" ><script type="text/template">
 							#include <cstdio>
 							#include <queue>
 							using namespace std;
@@ -258,7 +245,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="5-6|7-21|22-35|36-48|49-56|65|70-73" ><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="5-21|22-35|36-56|65,70-73" ><script type="text/template">
 							#include <cstdio>
 							#include <algorithm>
 							using namespace std;
@@ -342,7 +329,7 @@
 					<textarea data-template>
 					## 使用优先队列
 					------
-					<pre><code data-trim data-noescape data-line-numbers="2,8|13,17-22"><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="2,8,13,17-22"><script type="text/template">
 							#include <cstdio>
 							#include <queue>
 							using namespace std;
@@ -388,7 +375,8 @@
 		Reveal.initialize({
 			hash: true,
 			slideNumber: true,
-
+			width: 1024, 
+			height: 768,
 			// Learn about plugins: https://revealjs.com/plugins/
 			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
 		});

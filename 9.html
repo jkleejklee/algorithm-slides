@@ -11,19 +11,6 @@
 	<link rel="stylesheet" href="dist/reveal.css">
 	<link rel="stylesheet" href="dist/theme/white.css">
 
-	<style>
-		.reveal section {
-			font-weight: normal !important;
-			font-size: 0.9em !important;
-		}
-		.blue {
-			color: blue !important;
-		}
-		.small {
-			zoom: 70%;
-		}
-	</style>
-
 	<!-- Theme used for syntax highlighted code -->
 	<link rel="stylesheet" href="plugin/highlight/monokai.css">
 </head>
@@ -355,7 +342,8 @@
 		Reveal.initialize({
 			hash: true,
 			slideNumber: true,
-
+			width: 1024, 
+			height: 768,
 			// Learn about plugins: https://revealjs.com/plugins/
 			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
 		});

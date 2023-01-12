@@ -11,22 +11,6 @@
 	<link rel="stylesheet" href="dist/reveal.css">
 	<link rel="stylesheet" href="dist/theme/white.css">
 
-	<style>
-		.reveal section {
-			font-weight: normal !important;
-			font-size: 0.9em !important;
-		}
-		.red {
-			color: red !important;
-		}
-		.blue {
-			color: blue !important;
-		}
-		.small {
-			zoom: 70%;
-		}
-	</style>
-
 	<!-- Theme used for syntax highlighted code -->
 	<link rel="stylesheet" href="plugin/highlight/monokai.css">
 </head>
@@ -332,6 +316,11 @@
 				</section>
 				<section data-markdown>
 					<textarea data-template>
+					- 其他情况
+						1. 最长不降子序列长度，改成`a[j]≤a[i]` 
+						2. 最长递减子序列长度，改成`a[j]>a[i]` 
+						3. 最长不升子序列长度，改成`a[j]≥a[i]` 
+
 					<pre><code data-trim data-noescape data-line-numbers="10-20" ><script type="text/template">
 							#include <cstdio>
 							#include <algorithm>
@@ -349,7 +338,7 @@
 							   scanf("%d", &a[i]);
 							   D[i] = 1;
 							   for (int j = 0; j < i; j++)
-							     if (a[j] < a[i]) //<<<<<<<
+							     if (a[j] < a[i]) //其他情况修改这里
 							       D[i] = max(D[i], D[j] + 1);
 							   ans = max(ans, D[i]);
 							  }
@@ -357,10 +346,6 @@
 							  return 0;
 							}
 					</script></code></pre>
-					
-					1. 最长不降子序列长度，改成`a[j]≤a[i]` 
-					2. 最长递减子序列长度，改成`a[j]>a[i]` 
-					3. 最长不升子序列长度，改成`a[j]≥a[i]` 
 					</textarea>
 				</section>	
 				<section data-markdown>
@@ -527,7 +512,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="5-10|19,21" ><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="5-10,19,21" ><script type="text/template">
 							#include <cstdio>
 							using namespace std;
 							#define MAX(a, b) (a > b ? a : b)
@@ -593,7 +578,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="5-11|21-22,27" ><script type="text/template">
+					<pre><code data-trim data-noescape data-line-numbers="5-11,21-22,27" ><script type="text/template">
 							#include <cstdio>
 							#include <algorithm>
 							using namespace std;
@@ -665,57 +650,56 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="5-16|17-33|39,44,46" ><script type="text/template">
-							#include <cstdio>
-							#include <algorithm>
-							using namespace std;
-							const int N = 100001;
-							int V; //指定限额的最大金额
-							int F[N];
-							void zeroonePack(int c, int w)
+					<pre><code data-trim data-noescape data-line-numbers="7-33|39,44,46" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						const int N = 100001;
+						int V; //指定限额的最大金额
+						int F[N];
+						void zeroonePack(int c, int w)
+						{
+							for (int v = V; v >= c; v--)
+								F[v] = max(F[v], F[v - c] + w);
+						}
+						void completePack(int c, int w)
+						{
+							for (int v = c; v <= V; v++)
+								F[v] = max(F[v], F[v - c] + w);
+						}
+						//多重背包，其中c为费用，w为价值，m为数量
+						void multiplePack(int c, int w, int m)
+						{
+							if (c * m >= V)
 							{
-								for (int v = V; v >= c; v--)
-									F[v] = max(F[v], F[v - c] + w);
+								completePack(c, w);
+								return;
 							}
-							void completePack(int c, int w)
+							int k = 1;
+							while (k < m)
 							{
-								for (int v = c; v <= V; v++)
-									F[v] = max(F[v], F[v - c] + w);
+								zeroonePack(k * c, k * w);
+								m -= k;
+								k <<= 1;
 							}
-							//多重背包，其中c为费用，w为价值，m为数量
-							void multiplePack(int c, int w, int m)
+							zeroonePack(m * c, m * w);
+						}
+						int main()
+						{
+							int n;
+							while (~scanf("%d%d", &V, &n))
 							{
-								if (c * m >= V)
+								fill(F, F + N, 0);
+								while (n--)
 								{
-									completePack(c, w);
-									return;
+									int m, d;
+									scanf("%d%d", &m, &d);
+									multiplePack(d, d, m); //本题中费用和价值都是d，对应数量为m
 								}
-								int k = 1;
-								while (k < m)
-								{
-									zeroonePack(k * c, k * w);
-									m -= k;
-									k <<= 1;
-								}
-								zeroonePack(m * c, m * w);
+								printf("%d\n", F[V]);
 							}
-							int main()
-							{
-								int n;
-								while (~scanf("%d%d", &V, &n))
-								{
-									fill(F, F + N, 0);
-									while (n--)
-									{
-										int m, d;
-										scanf("%d%d", &m, &d);
-										multiplePack(d, d, m); //本题中费用和价值都是d，对应数量为m
-									}
-									printf("%d\n", F[V]);
-								}
-								return 0;
-							}
-												
+							return 0;
+						}			
 					</script></code></pre>
 				</section>
 			</section>
@@ -734,7 +718,8 @@
 		Reveal.initialize({
 			hash: true,
 			slideNumber: true,
-
+			width: 1024, 
+			height: 768,
 			// Learn about plugins: https://revealjs.com/plugins/
 			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
 		});
