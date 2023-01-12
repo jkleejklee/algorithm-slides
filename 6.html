@@ -1,0 +1,1060 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.red {
+			color: red !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.small {
+			zoom: 70%;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #6 高级数据结构
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 6.1 并查集
+					------
+					- <span class="blue">不相交集合数据结构</span>(Disjoint Set) ：将编号分别为$1…n$的$n$个对象划分为不相交集合，
+					在每个集合中，选择其中某个元素$x$代表所在集合
+					- 基本操作：
+						- MAKE-SET(x) 	建立新的集合，唯一成员$x$
+						- UNION(x,y) 	将包含$x$和$y$的两个集合合并成一个新的集合
+						- FIND(x) 		返回指针，指向包含$x$的集合的<span class="blue">“代表”</span>(representative)
+					- 由于两个基本操作是<span class="blue">UNION</span>(合并)和<span class="blue">FIND</span>(查找)，所以称为“并查集”
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 实现
+					------
+					- 使用树的数据结构来表示并查集，在程序实现起来相对简单，森林中的每棵树作为一个集合，树的节点表示集合中的元素，树的根用来作为该集合的“代表”
+						- 查找操作相当于对树进行遍历，从某个节点沿着父节点指针找到这棵树的根节点
+						- 合并操作相当于两棵树合并成一棵树，两个节点位于两棵不同的树的时候，将一个节点所在树的根的父亲节点指向另一个节点所在树的根
+					- 在具体程序实现中，使用一维数组p来实现，数组下标i表示每个节点，p[i]为指向其父节点的指针，即p[x]=y表示x的父节点为y
+					- p的初始值有两种设置方法，一种是均设为-1，另一种是令p[i]=i	
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 无向图的连通分量
+					------
+					<div class="small">
+
+					![img](img/6-1.png)
+					| 处理边 | 构成的不相交集合 |       |      |      |         |      |      |       |      |      |
+					| ---------- | -------------------- | ----- | ---- | ---- | ------- | ---- | ---- | ----- | ---- | ---- |
+					| 初始       | {a}                  | {b}   | {c}  | {d}  | {e}     | {f}  | {g}  | {h}   | {i}  | {j}  |
+					| (b,d)      | {a}                  | {b,d} | {c}  | {d}  | {e}     | {f}  | {g}  | {h}   | {i}  | {j}  |
+					| (e,g)      | {a}                  | {b,d} | {c}  |      | {e,g}   | {f}  |      | {h}   | {i}  | {j}  |
+					| (a,c)      | {a,c}                | {b,d} |      |      | {e,g}   | {f}  |      | {h}   | {i}  | {j}  |
+					| (h,i)      | {a,c}                | {b,d} |      |      | {e,g}   | {f}  |      | {h,i} |      | {j}  |
+					| (a,b)      | {a,b,c,d}            |       |      |      | {e,g}   | {f}  |      | {h,i} |      | {j}  |
+					| (e,f)      | {a,b,c,d}            |       |      |      | {e,f,g} |      |      | {h,i} |      | {j}  |
+					| (b,c)      | {a,b,c,d}            |       |      |      | {e,f,g} |      |      | {h,i} |      | {j}  |
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 改进
+					------
+					- <span class="blue">按秩合并</span>(union by rank)
+						- 增加一个Rank数组（初始值为0）来记录树的深度，也就是<span class="blue">秩</span>
+						- 将秩较小的树的根指向秩较大的树的根
+						
+						```c
+						void Union(int x,int y)  
+						{
+							x = Find(x);
+							y = Find(y);
+							if(x==y) return;
+							if(Rank[x] < Rank[y])
+								p[x]=y;
+							else {
+								p[y]=x;
+								if(Rank[x]==Rank[y])
+									Rank[x]++;
+							}
+						}
+						```
+						- 任意顺序的合并操作以后，包含$k$个节点的树的最大高度不超过$\log k$
+					</textarea>
+				</section>
+				<section data-markdown  data-auto-animate>
+					<textarea data-template>
+					## 改进
+					------
+					- <span class="blue">路径压缩</span>(path compression)
+						- 每次查找的时候，可以将查找路径上的节点修改成指向根节点，以便下次查找的时候速度更快
+						- 路径压缩的效果如图所示，(a)为压缩前，(b)为压缩后<br/><br/>
+						   
+						
+					```c
+					int Find(int x)
+					{
+						if(p[x] < 0)
+							return x;
+						p[x] = Find(p[x]);
+						return p[x];
+					}
+					```
+					<span style="float: right;position: relative;right: 20px; bottom: 300px;">
+					
+					![img](img/6-2.png)	
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2524 -- Ubiquitous Religions (poj.org)](http://poj.org/problem?id=2524)
+					------
+					- $n$个学生信仰不同的宗教
+					- 给出$m$条信息，每条信息包含两个学生的编号，这两个学生信仰同一宗教
+					- 要求判断共有多少种宗教
+					</textarea>
+				</section>			
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-10|11-21|27,32" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 50005;
+							int p[N];
+							//查找操作：沿着指针递归查找到x的“代表”，即父节点为-1的节点
+							int Find(int x)
+							{
+								return (p[x] < 0) ? x : Find(p[x]);
+							}
+							//合并操作：先找到x和y节点所在树的根节点
+							//再将根节点数值小的作为父节点，数值大的作为子节点
+							void Union(int x, int y)
+							{
+								x = Find(x);
+								y = Find(y);
+								if (x > y)
+									p[x] = y;
+								if (x < y)
+									p[y] = x;
+							}
+							int main()
+							{
+								int n, m, k = 1;
+								while (scanf("%d%d", &n, &m) && (n || m))
+								{
+									fill(p, p + N, -1); //对p数组进行初始化，设初始值为-1
+									while (m--)
+									{
+										int i, j;
+										scanf("%d%d", &i, &j);
+										Union(i, j);
+									}
+									int ans = 0;
+									for (int i = 1; i <= n; i++)
+										if (p[i] == -1)
+											ans++;
+									printf("Case %d: %d\n", k++, ans);
+								}
+								return 0;
+							}
+							
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 6.2 线段树
+					------
+					- <span class="blue">线段树</span>(Segment tree) 使用二叉树的结构，每个节点表示一个包含起点和终点的区间，
+					也可以看成是一个线段。线段树对区间信息进行存储，可以实现一些与区间计算有关的操作，例如区间最值问题、区间求和问题等，计算几何里面扫描线的操作也可以用线段树实现
+					- 由于线段树消耗大量存储空间，熟练掌握离散化处理方法十分重要
+					
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## “在线” 与“离线”
+					------
+					- 在程序设计过程中，如果开始时不需要知道所有输入，而是以序列的方式依次处理问题的算法，随着查询操作，数据也在实时变化，也称为“在线”查询，相应的算法称为<span class="blue">在线算法</span>，例如插入排序算法、贪心算法等
+					- 相对的，开始时就需要知道问题的所有数据，每次查询操作时的数据保持不变，称为“离线”查询，相应的算法称为<span class="blue">离线算法</span>。基于线段树的区间查询算法是离线查询，在多次查询的问题中能够提高效率
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2182 -- Lost Cows (poj.org)](http://poj.org/problem?id=2182)
+					------
+					- $n$头牛编号为$1…n$，打乱顺序排成一列，除去队首的牛之外，给出每头牛在队列中前面编号比它小的牛的数量$k$，求队列中每头牛的编号
+					![img](img/6-3.png)
+					</textarea>
+				</section>
+				<section data-markdown  data-auto-animate>
+					<textarea data-template>
+					###	分析
+					------
+					- 维护一个线段树来解决该问题，创建一个线段树$T$，树中每个节点有3个属性$[p,r,n]$，分别代表线段左端点、线段右端点、左右端点之间节点的数量
+					- 以$n=5$为例，构造的线段树以及节点信息如图所示
+
+					![img](img/6-4.png)
+					</textarea>
+				</section>
+				<section data-markdown  data-auto-animate>
+					<textarea data-template>
+					###	分析
+					------
+					![img](img/6-4.png)
+					- 从树根处依次比较：如果$k$小于等于左子树的$n$，则在左子树中继续查询；
+					如果$k$大于左子树的$n$，则$k=k-n$，在右子树中继续查询；直到找到叶子节点($p=r$)，此时的$p$即为要查询的编号
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="4-11|13-21|23-32|38-39,42-45" ><script type="text/template">
+							#include <cstdio>
+							using namespace std;
+							const int N = 20000;
+							struct SegmentTree
+							{
+								int p; //线段左端点
+								int r; //线段右端点
+								int n; //左右端点之间节点的数量
+								SegmentTree() {}
+								SegmentTree(int a, int b) : p(a), r(b), n(b - a + 1) {}
+							} T[N];
+
+							//递归构建线段树
+							void build(int x, int p, int r)
+							{
+								T[x] = SegmentTree(p, r);
+								if (p == r)
+									return;
+								build(2 * x, p, (p + r) / 2);
+								build(2 * x + 1, (p + r) / 2 + 1, r);
+							}
+
+							int query(int x, int k)
+							{
+								T[x].n--;//每查找完一个k，就从队列中删掉，也就是将对应查找路径上的n值都减1
+								if (T[x].p == T[x].r)
+									return T[x].p;
+								else if (k <= T[2 * x].n)
+									return query(2 * x, k);
+								else
+									return query(2 * x + 1, k - T[2 * x].n);
+							}
+
+							int main()
+							{
+								int n;
+								scanf("%d", &n);
+								build(1, 1, n);
+								int a[N]; //数组a保存每头牛前面比它编号小的牛的数量
+								for (int i = 2; i <= n; i++)
+									scanf("%d", &a[i]);
+								//从队列最后一个元素向前查找，结果保存到数组ans中
+								int ans[N];
+								for (int i = n; i >= 1; i--)
+									ans[i] = query(1, a[i] + 1);
+								for (int i = 1; i <= n; i++)
+									printf("%d\n", ans[i]);
+								return 0;
+							}													
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					## 6.3 树状数组
+					------
+					- <span class="blue">树状数组</span>也称<span class="blue">二元索引树</span>(Binary Indexed Tree)或<span class="blue">Fenwick树</span>,
+					树状数组非常适合区间累计的计数与求和，尤其是多组查询，代码效率很高
+					- 与线段树相比，线段树可实现的功能更多，凡是树状数组能解决的问题，线段树同样可以解决
+					- 树状数组用一维数组C实现，每个元素代表不同区间（图中矩形横向范围）
+						- C[1]:[1-1],C[2]:[1-2],C[3]:[3-3],C[4]:[1-4],C[5]:[5-5],C[6]:[5-6],...
+
+					![img](img/6-5.png)
+					</textarea>
+				</section>
+				<section data-markdown  data-auto-animate>
+					<textarea data-template>
+					![img](img/6-5.png)
+					- <span class="small">区间用下面方法确定：
+						- 将下标用二进制表示出来，然后看末位有几个0，设0的个数为$k$，则它代表的区间就向前推$2^k-1$
+						- 例如：$6=(110)_2$，$k=1$，向前推$2^1-1=1$，所以表示的区间为[5-6]
+					</span>
+					- <span class="small">树状数组两个基本操作：
+						1. 更新/添加元素$x$：将$x$对应“列”的C值更新
+							- 例如：$x=1$，需要将$C[1],C[2],C[4],C[8]\ldots$都更新
+							- 计数：对应位置加1
+							- 求和：对应位置加$x$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown  data-auto-animate>
+					<textarea data-template>
+					![img](img/6-5.png)
+
+					2. <span class="small">区间求和：将对应区间“行”的C值相加
+						- 对于$[1\ldots n]$区间求和，只需将对应“行”的C值相加，例如
+						$$\sum [1\ldots 7]=C[4]+C[6]+C[7]$$ 
+						- 对于$[m\ldots n]$区间求和，只需$\sum [1\ldots n]$减去$\sum [1\ldots m-1]$，例如
+						$$\sum[3\ldots 5]=\sum [1…5]-\sum [1…2]=C[4]+C[5]-C[2]$$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	`lowbit`
+					------
+
+					- <span class="small">计算公式：$lowbit(x)=x\\&(-x)$，例如：$lowbit(6)$
+					|十进制 | 二进制(32位int类型)                      |
+					| ------: | -------------------------------- |
+					| 6       | `00000000000000000000000000000110` |
+					| -6      | `11111111111111111111111111111010`|
+					| &       | `00000000000000000000000000000010` |
+					</span>
+					-  <span class="small">计算出来的$lowbit$值见下表
+					| x         | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    |
+					| --------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+					| lowbit(x) | 1    | 2    | 1    | 4    | 1    | 2    | 1    | 8    |
+					</span> 
+					-  <span class="small">观察树状数组的两个基本操作可以发现，下标的变化值为上一个下标的$lowbit$值
+						1. “更新”的列的下标变化，例如1对应列C的下标为{1,2,4,8,…}，变化值为$lowbit(1),lowbit(2),lowbit(4),\ldots$
+						2.  “求和”的行的下标变化，例如[1-7]对应行C的下标为{7,6,4}，变化值为$lowbit(7),lowbit(6)$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2352 -- Stars (poj.org)](http://poj.org/problem?id=2352)
+					------
+					- 给出$n$个星星的坐标$(x,y)$，按$y$递增，$y$相等$x$递增的次序
+					- 一颗星星的level定义为所有$x$和$y$均不大于该星星坐标的星星的总数，如图所示，编号1…5的星星的level分别为0,1,2,1,3
+					- 依次输出level为0…n-1的星星个数，level为0的有1个，level为1的有2个，依次类推，所以输出1,2,1,1,0
+					
+					![img](img/6-6.png)
+					- 本题中给出的星星坐标已经将$y$递增排序，统计每个星星$x$坐标之前有多少个星星即可，也就是每输入一个星星的坐标，level值就是[1…x-1]的累计值
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="4-9|10-17|18-23|32-34" ><script type="text/template">
+							#include <cstdio>
+							using namespace std;
+							const int N = 32005;
+							int C[N];    	//树状数组
+							int levels[N]; 	//保存同级别星星的个数
+							int lowbit(int x)
+							{
+								return x & (-x);
+							}
+							//树状数组求和操作，从x向左一直累加到1为止
+							int sum(int x)
+							{
+								int s;
+								for (s = 0; x > 0; x -= lowbit(x))
+									s += C[x];
+								return s;
+							}
+							//树状数组更新操作，N为x的最大值
+							void update(int x)
+							{
+								for (; x <= N; x += lowbit(x))
+									C[x]++; //此处加1用来记录个数；如果用来求和则加x
+							}
+							int main()
+							{
+								int n;
+								scanf("%d", &n);
+								for (int i = 1; i <= n; i++)
+								{
+									int x, y;
+									scanf("%d%d", &x, &y);
+							//树状数组下标从1开始，求和与更新操作也要从1开始,因为x取值可能为0，所以这里加1
+									levels[sum(x + 1)]++;
+									update(x + 1);
+								}
+								for (int i = 0; i < n; i++)
+									printf("%d\n", levels[i]);
+								return 0;
+							}																			
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 6.4 二叉搜索树
+					------
+					- <span class="blue">二叉搜索树</span>(BST, Binary search tree) 具有如下性质：
+						- root是二叉搜索树的节点，x是root节点的值
+						- 如果left是root左子树的节点，则left.x≤root.x
+						- 如果right是root右子树的节点，则right.x≥root.x
+					- 一般的二叉搜索树在最坏情况下，将长度为n的有序序列插入后，将变成一个长度为n的链表，查找效率降低
+					- 为了解决这个问题，产生了各种平衡树 ，常见的有<span class="blue">AVL树</span> ，<span class="blue">树堆</span>(Treap)，<span class="blue">伸展树</span>(Splay tree )，<span class="blue">红黑树</span>(Red-black tree)等
+					
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [2418 -- Hardwood Species (poj.org)](http://poj.org/problem?id=2418)
+					------
+					- 给出一个单词列表，将这些单词去重之后按字典序排序，并计算出每个单词出现的次数在总单词数中的比例
+					- 使用二叉搜索树来存储单词和查找，树中每个节点包含左节点、右节点、单词、单词出现的次数这几个属性
+
+					```c
+					struct node
+					{
+						char name[31];      	//单词
+						node *left, *right; 	//指向左右子节点
+						int cnt;            	//单词出现次数
+						node() : left(0), right(0), cnt(1) {}
+					};
+					```
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-19|20-29|34-40" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						int n; //单词总数
+						//递归进行二叉搜索树的插入节点操作。root为当前节点，s为单词
+						void insert(node *&root, char *s)
+						{
+							if (!root)
+							{
+								root = new node();
+								strcpy(root->name, s);
+							}
+							else if (strcmp(s, root->name) == 0)
+								(root->cnt)++;
+							else if (strcmp(s, root->name) < 0)
+								insert(root->left, s);
+							else
+								insert(root->right, s);
+						}
+						//从当前节点root开始，通过中序遍历依次输出单词和单词出现的概率
+						void inorder(node *root)
+						{
+							if (root)
+							{
+								inorder(root->left);
+								printf("%s %.4f\n", root->name, root->cnt * 100.0 / n);
+								inorder(root->right);
+							}
+						}
+						int main()
+						{
+							char s[31];
+							node *root = NULL;
+							//依次读入单词，将单词插入二叉搜索树，最后遍历输出结果
+							while (gets(s))
+							{
+								insert(root, s);
+								n++;
+							}
+							inorder(root);
+							return 0;
+						}																									
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### `map`
+					------
+					- C++ STL中的关联容器[map](http://www.cplusplus.com/reference/map/map/)就是使用二叉搜索树实现，map内部通过自建一棵红黑树，实现了数据的自动排序和查找,使用map实现如下：
+
+					```c++
+					#include <iostream>
+					#include <cstdio>
+					#include <string>
+					#include <map>
+					using namespace std;
+					typedef map<string, int> item;
+					int main()
+					{
+						int n = 0;
+						item a;
+						string s;
+						while (getline(cin, s))
+							n++, a[s]++;
+						for (item::iterator it = a.begin(); it != a.end(); it++)
+							printf("%s %.4f\n", it->first.c_str(), it->second * 100.0 / n);
+						return 0;
+					}
+					```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 树堆
+					------
+					- 对于二叉搜索树，在插入过程中如果插入的值一直小于或大于上一个值，树会向一个方向伸展，这会造成二叉搜索树不平衡，而降低搜索效率，这时可以使用树堆来解决该问题
+					- <span class="blue">树堆</span>(Treap)是通过添加一个随机值$r$来解决二叉搜索树不平衡问题，树堆根据$r$值，保持树的节点的层次位置按$r$值单调排列，因为$r$是随机的，树的节点就会保证基本的平衡，$r$值各不相等的情况下，生成的树是唯一的
+					- 树堆的插入、查找和删除等基本操作和普通的二叉搜索树类似，这里关键的操作就是根据$r$进行树的调整
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [3481 -- Double Queue (poj.org)](http://poj.org/problem?id=3481)
+					------
+					- 系统为客户服务，每个客户有一个标识$k$，一个优先级$p$。这个系统可以接收的请求和对应的策略如下：
+
+					| 请求      | 策略                               |
+					| --------- | ---------------------------------- |
+					| 0         | 停止服务                           |
+					| 1 $k$ $p$ | 添加优先级$p$的客户$k$             |
+					| 2         | 服务优先级最高的客户并移除等待队列 |
+					| 3         | 服务优先级最低的客户并移除等待队列 |
+					
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 分析
+					------
+					- 本题采用树堆来解决，树的每个节点上方为标识，下方为$r$值(从上到下依次递增)，从左到右节点$a,b,x,c$的$p$值依次递增
+					- 插入一个新节点$y$，它的$p$值小于根节点$x$，插入$x$左侧，插入以后如左图，整个树的$r$值不符合要求，需要进行旋转操作
+					- 树堆的调整分为右旋操作和左旋操作，左节点$r$值小于根节点$r$值，执行右旋操作，执行完如右图，树的形态发生了变化，但是$p$值的顺序不变
+
+					![img](img/6-7.png)
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-12|13-20|21-28|29-52|53-87" ><script type="text/template">
+						#include <cstdio>
+						#include <ctime>
+						#include <cstdlib>
+						using namespace std;
+						struct node  //树堆节点
+						{
+							node *left, *right; 		//左右子节点
+							int k;              		//用户标识
+							int p;              		//用户优先级
+							int r;              		//随机数
+						node(int a, int b, int c) : left(0), right(0), k(a), p(b), r(c) {}
+						};
+						//右旋操作
+						void rightRotate(node *&a)
+						{
+							node *b = a->left;
+							a->left = b->right;
+							b->right = a;
+							a = b;
+						}
+						//左旋操作
+						void leftRotate(node *&a)
+						{
+							node *b = a->right;
+							a->right = b->left;
+							b->left = a;
+							a = b;
+						}
+						//插入操作
+						void insertTreap(node *&root, int k, int p)
+						{
+							//树为空，创建根节点
+							if (!root)
+								root = new node(k, p, rand());
+							//树不空
+							else if (p <= root->p)
+							{
+								//插入节点p小于根节点，插入左子树
+								insertTreap(root->left, k, p);
+								// 如果左节点r小于插入节点r，右旋
+								if (root->left->r < root->r)
+									rightRotate(root);
+							}
+							else
+							{
+								//插入节点p大于根节点，插入右子树
+								insertTreap(root->right, k, p);
+								//如果右节点r小于插入节点r，左旋
+								if (root->right->r < root->r)
+									leftRotate(root);
+							}
+						}
+						//删除操作
+						void deleteTreap(node *&root, int p)
+						{
+							//当前节点p等于删除节点p，可直接删除
+							if (p == root->p)
+							{
+								//无右子树，左节点代替当前节点
+								if (!root->right)
+									root = root->left;
+								//无左子树，右节点代替当前节点
+								else if (!root->left)
+									root = root->right;
+								else
+								{
+									//左节点r小，右旋
+									if (root->left->r < root->right->r)
+									{
+										rightRotate(root);
+										deleteTreap(root->right, p);
+									}
+									//右节点r小，左旋
+									else
+									{
+										leftRotate(root);
+										deleteTreap(root->left, p);
+									}
+								}
+							}
+							//当前节点p小于删除节点p，递归删除左子树
+							else if (p < root->p)
+								deleteTreap(root->left, p);
+							//当前节点p大于删除节点p，递归删除右子树
+							else
+								deleteTreap(root->right, p);
+						}
+						void findMax(node *&root)
+						{
+							node *t = root;
+							while (t->right)
+								t = t->right;
+							printf("%d\n", t->k);
+							deleteTreap(root, t->p);
+						}
+						void findMin(node *&root)
+						{
+							node *t = root;
+							while (t->left)
+								t = t->left;
+							printf("%d\n", t->k);
+							deleteTreap(root, t->p);
+						}
+						int main()
+						{
+							srand(time(0));
+							node *root = NULL;
+							int r;
+							while (scanf("%d", &r) && r)
+							{
+								switch (r)
+								{
+								case 1:
+									int k, p;
+									scanf("%d%d", &k, &p);
+									insertTreap(root, k, p);
+									break;
+								case 2:
+									if (root == NULL)
+									{
+										printf("0\n");
+										break;
+									}
+									findMax(root);
+									break;
+								case 3:
+									if (root == NULL)
+									{
+										printf("0\n");
+										break;
+									}
+									findMin(root);
+									break;
+								}
+							}
+							return 0;
+						}																																
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### `map`
+					------
+
+					```c++
+					#include <cstdio>
+					#include <map>
+					using namespace std;
+					int main()
+					{
+						map<int, int> a;
+						int r;
+						while (scanf("%d", &r) && r)
+						{
+							switch (r)
+							{
+							case 1:
+								int k, p;
+								scanf("%d%d", &k, &p);
+								a[p] = k;
+								break;
+							case 2:
+								if (a.empty())
+								{
+									printf("0\n");
+									break;
+								}
+								printf("%d\n", (--a.end())->second);
+								a.erase(--a.end());
+								break;
+							case 3:
+								if (a.empty())
+								{
+									printf("0\n");
+									break;
+								}
+								printf("%d\n", a.begin()->second);
+								a.erase(a.begin());
+								break;
+							}
+						}
+						return 0;
+					}						
+					```
+					</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 6.5 哈希表
+					------
+					- <span class="blue">散列表</span>(Hash table，也叫哈希表)基本原理是使用一个下标范围比较大的数组$H[1\ldots m]$来存储元素$x$
+					- 设计一个哈希函数，使得每个$x$都与一个函数值$y$(即数组$H$的下标)相对应，然后用$H[y]$指向元素$x$，没有元素指向，则$H[y]=\phi$
+					- 由于不能够保证每个元素的关键字与函数值是一一对应的，因此很有可能出现如下情况：对于不同的元素$x_1,x_2$，哈希函数计算出了相同的函数值$y$，
+					这就是产生了所谓的<span class="red">“冲突”</span> ,换句话说，就是哈希函数同一个$H[y]$指向了不同的元素$x_1,x_2$
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 解决冲突
+					------
+					1. 采用<span class="blue">链接表</span>，将相同函数值的所有元素放在一个链表中，$H[y]$指向这个链表
+					2. <span class="blue">开放寻址法</span>
+						- 最简单的是线性探测再散列技术，即当$H[y]\neq\phi$，说明$H[y]$位置已经存储有元素，
+						依次探测$(y+i)\mod m, i=1,2,3\ldots$，直到找到空的存储单元为止
+						- 当冲突严重时，扫描到空单元的时间会变长，哈希表越满，这种情况带来时间消耗就会越大，这时通过扩大数组范围$m$可以有效减少查找时间
+						- 设计一个好的哈希函数是解题的关键，而实际应用中，哈希函数的种类很多，可以应用到多个领域 ，理解哈希函数的作用十分必要
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [2503 -- Babelfish (poj.org)](http://poj.org/problem?id=2503)
+					------
+					- 给出字典条目分为<英语 外语>，接下来给出外语，在字典中查找对应的英语并输出，如果查不到，输出“eh”
+
+					- 采用哈希表解决，将字符串转换成对应的哈希值，这样在查找时会提高效率
+					- 常用的字符串哈希函数有BKDRHash、PJWHash(ELFHash)、APHash等，效率较高的为BKDRHash函数
+					- [各种字符串Hash函数比较 (byvoid.com)](https://byvoid.com/zhs/blog/string-hash-compare/)
+
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 分析
+					------
+					- 将外语词条保存到一个哈希表$H$中，英语保存到对应的表$A$中 
+					 	1. <span class="blue">向哈希表添加元素</span>：通过一个字符串哈希函数将外语字符串$x$转化成整数$y$，将$x$保存到$H[y]$中，将$x$对应的英语保存到$A[y]$中。
+						如果冲突，按照线性探测再散列的方法，令$y=y+i(i=1,2,\ldots )$
+						2. <span class="blue">在哈希表中查找元素</span>：当需要查找外语字符串$x$，先通过哈希函数计算出$x$的哈希值$y$，读出$H[y]$的值，将$H[y]$和$x$比较，
+						如果相等，则对应的$A[y]$就是要求的内容；如果不相等，说明之前$H[y]$发生冲突，存储了其他的字符串的位置，这时需要在$y+i(i=1,2,\ldots )$位置继续查询;
+						$H[y]=\phi$表明没有找到
+					- 对于哈希数组的空间大小，越接近单词总量，剩余的空位置越少，由于查找是到下一个空位置终止，终止前花费的查找时间就会越长
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-13|14-21|22-28|34-40" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						const int N = 100003 * 2;
+						char A[N][11]; //保存外语单词
+						char H[N][11]; //按哈希值保存英语单词
+						unsigned int BKDRhash(const char *key) //哈希函数
+						{
+							unsigned int seed = 31, h = 0;
+							while (*key)
+								h = h * seed + (*key++);
+							return h & 0x7fffffff;
+						}
+						void Insert(char *f, char *e) //添加元素
+						{
+							int y = BKDRhash(e) % N;
+							while (strcmp(H[y], e) && H[y][0])
+								y = (y + 1) % N;
+							strcpy(A[y], f);
+							strcpy(H[y], e);
+						}
+						void Find(char *x)  //查找元素
+						{
+							int y = BKDRhash(x) % N;
+							while (strcmp(H[y], x) && H[y][0])
+								y = (y + 1) % N;
+							puts(H[y][0] ? A[y] : "eh");
+						}
+						int main()
+						{
+							char s[22];
+							char f[11]; //外语单词
+							char e[11]; //英语单词
+							while (gets(s) && s[0])
+							{
+								sscanf(s, "%s %s", f, e);
+								Insert(f, e);
+							}
+							while (gets(f) && f[0])
+								Find(f);
+							return 0;
+						}																															
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### `map`
+					------
+
+					```c++
+					#include <cstdio>
+					#include <string>
+					#include <map>
+					using namespace std;
+					int main()
+					{
+						map<string, string> D;
+						char s[22], f[11], e[11];
+						while (gets(s) && s[0])
+						{
+							sscanf(s, "%s %s", f, e);
+							D[e] = f;
+						}
+						while (gets(f) && f[0])
+							puts(D[f].size() ? D[f].c_str() : "eh");
+						return 0;
+					}								
+					```
+					</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 6.6 字符串
+					------
+					- 字符串一个常见的应用就是模式匹配问题，比如文本编辑软件中的查找功能，网页搜索，GNU的grep命令等
+					- 将字符串扩展到大量的文本，需要更高效的数据结构和算法来实现
+					- 除了<span class="blue">Trie树</span>、<span class="blue">KMP算法</span>之外，还有<span class="blue">后缀树</span>(Suffix tree) ，<span class="blue">后缀数组</span>(Suffix array) ，<span class="blue">Boyer-Moore字符串搜索算法</span>，
+					在文本里搜索多个字符串的<span class="blue">Aho-Corasick算法</span>(AC自动机)等
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 字典树
+					------
+					- <span class="blue">Trie树</span>，也称前缀树或字典树
+						- 例如："a", "to", "tea", "ted", "ten", "i", "in", "inn"构成的trie树如图所示。根节点为空字符串，
+						每个字符串从根节点到对应的叶子节点，每个节点的子孙都有相同的前缀
+						- trie树使用链表存储，也可以使用二维数组，二维数组在空间上有所浪费，但是建树和查找过程效率很高
+					
+					![img](img/6-8.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 字典树
+					------
+					- 使用二维数组建树后的内容如图所示。数组trie[i,j]中存储的值为字符插入树的顺序pos，从根节点到pos的路径就是pos后面包含字符串的公共前缀；
+					图中数字上标为数组num[pos]，其值为多少字符串以根到pos为前缀
+					
+					![img](img/6-9.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [2001 -- Shortest Prefixes (poj.org)](http://poj.org/problem?id=2001)
+					------
+					- A <span class="blue">prefix</span> of a string is a substring starting at the beginning of the given string. 
+					The prefixes of "carbon" are: "c", "ca", "car", "carb", "carbo", and "carbon". 
+					Note that the empty string is not considered a prefix in this problem, but every non-empty string is considered to be a prefix of itself. 
+					- In everyday language, we tend to abbreviate words by prefixes. For example, "carbohydrate" is commonly abbreviated by "carb". 
+					- In this problem, given a set of words, you will find for each word the shortest prefix that uniquely identifies the word it represents.
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 分析
+					------
+					- 本题的解就是求num值为1的位置，或者num不为1但是已经是整个单词的情况
+
+					<pre><code data-trim data-noescape data-line-numbers="5-7|8-22|23-35|40-53" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						const int N = 20001;
+						int trie[N][26]; 	//trie树，单词只包含小写字母，所以为26列
+						int num[N];      	//相同前缀的单词数量
+						int pos = 1;     	//记录插入节点顺序值，初始值为1，每插入一个字符加1
+						void Insert(char *s)
+						{
+							int p = 0;
+							for (int i = 0; s[i]; i++)
+							{
+								int n = s[i] - 'a';
+								// 如果Trie某个位置已经有值，说明后插入的字符串与之前
+								// 的某个字符串前缀相同，不用重复插入
+								if (!trie[p][n])
+									trie[p][n] = pos++;
+								//插入后将数组移到p值对应行
+								p = trie[p][n];
+								num[p]++;
+							}
+						}
+						//返回和s有相同前缀的字符串的个数
+						int Find(char *s)
+						{
+							int p = 0;
+							for (int i = 0; s[i]; i++)
+							{
+								int n = s[i] - 'a';
+								if (!trie[p][n])
+									return 0;
+								p = trie[p][n];
+							}
+							return num[p];
+						}
+						int main()
+						{
+							int cnt = 0; //单词数量
+							char a[22], b[1001][22];
+							while (~scanf("%s", b[cnt]))
+								Insert(b[cnt++]);
+							for (int i = 0; i < cnt; i++)
+								for (int j = 0; b[i][j];)
+								{
+									//对每个字符串s，依次截取前缀作为字符串进行查找操作
+									strncpy(a, b[i], ++j);
+									a[j] = '\0';
+									if (Find(a) == 1 || !b[i][j])
+									{	
+									    printf("%s %s\n", b[i], a);	
+									    break;
+									}
+								}
+							return 0;
+						}																												
+					</script></code></pre>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [3461 -- Oulipo (poj.org)](http://poj.org/problem?id=3461)
+					------
+					- 题意：给出字符串W和T，求W在T中出现的次数
+					- Knuth-Morris-Pratt字符串查找算法(<span class="blue">KMP算法</span>) ：基于前缀匹配的方法，可以提高匹配效率
+					- 如图所示，当P[6]≠S[6]时，可以退回到P[2]继续匹配，用一个数组next记录回退的位置，比如next[6]=2，就可以通过该数组实现回退
+					- next数组的求法相当于在P数组内部进行字符串的匹配，值就是匹配到的共同前缀长度
+
+					![img](img/6-10.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					<pre><code data-trim data-noescape data-line-numbers="8-19|20-34" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						const int N = 10001;
+						const int M = 1000001;
+						int next[N];
+						int ans;
+						//求next值
+						void getnext(char *a, int len)
+						{
+							next[0] = next[1] = 0;
+							for (int i = 1; i < len; i++)
+							{
+								int j = next[i];
+								while (j && a[j] != a[i])
+									j = next[j];
+								next[i + 1] = (a[j] == a[i]) ? j + 1 : 0;
+							}
+						}
+						//求P在S中出现的次数
+						void KMP(char *S, char *P)
+						{
+							int len = strlen(P);
+							getnext(P, len);
+							for (int i = 0, j = 0; S[i]; i++)
+							{
+								while (j && S[i] != P[j])
+									j = next[j];
+								if (S[i] == P[j])
+									j++;
+								if (j == len)
+									ans++;
+							}
+						}
+						int main()
+						{
+							int n;
+							char W[N], T[M];
+							scanf("%d", &n);
+							while (n--)
+							{
+								ans = 0;
+								scanf("%s", W);
+								scanf("%s", T);
+								KMP(T, W);
+								printf("%d\n", ans);
+							}
+							return 0;
+						}																																		
+					</script></code></pre>
+					</textarea>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

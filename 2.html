@@ -1,0 +1,544 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.red {
+			color: red !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.small {
+			zoom: 70%;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+					## #2 基础算法
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 2.1 枚举法
+					------
+					- 枚举法也叫穷举法,是一种<span class="blue">暴力搜索</span>的方法,特点是将给定条件的所有情况都进行计算,直到找到符合要求的解,
+					随着参与计算的参数的增加,算法复杂度可能成指数级增加,所以只有当所有情况的总数在一个较小的范围时才能进行
+					- 枚举法的优点就是建模简单,几乎不用考虑任何算法。在计算过程中,排除一些不可能的情况,能够适当减少一定的计算量
+					- 程序设计中一些<span class="blue">排序算法</span>:比如选择排序、冒泡排序、插入排序；<span class="blue">查找算法</span>:比如顺序查找、二叉树的遍历等,都是枚举法的具体应用
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [2363 -- Blocks (poj.org)](http://poj.org/problem?id=2363)
+					------
+					- **Description**
+						- ...Each block is a cube, 1 inch by 1 inch by 1 inch. Donald wants to stack the blocks together
+					into a rectangular solid and wrap them all up in brown paper for shipping. How much brown paper does
+					Donald need?
+					- **Input**
+						- The first line of input contains C, the number of test cases. For each case there is an additional
+					line containing N, the number of blocks to be shipped. N does not exceed 1000.
+					- **Output**
+						- Your program should produce one line of output per case, giving the minimal area of paper (in
+					square inches) needed to wrap the blocks when they are stacked together.
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						- 输入:10
+						- 输出:34 <br/><br/><br/>
+						![img](img/2-1.png)
+					</textarea>	
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="12,14-18" ><script type="text/template">
+						#include <cstdio.h>
+						#include <algorithm>
+						#include <climits>
+						using namespace std;
+						int main()
+						{
+							int c;
+							scanf("%d", &c);
+							while (c--)
+							{
+								int n;
+								int ans = INT_MAX;
+								scanf("%d", &n);
+								for (int x = 1; x * x * x <= n; x++)
+									for (int y = 1; y * y <= n; y++)
+										for (int z = 1; z <= n; z++)
+											if (x * y * z == n)
+												ans = min(ans, (x * y + y * z + z * x) * 2);
+								printf("%d\n", ans);
+							}
+							return 0;
+						}
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 2.2 递归法
+					------
+					- 递归法思路:
+  						1. 原问题分解为一个或多个规模更小、但具有类似于原问题特性的子问题
+  						2. 确定无须分解、可直接求解的最小子问题（递归的终止条件）
+					- 递归的两个基本要素是：
+  						1. 递归关系式：确定递归的方式，即原问题是如何分解为子问题的
+  						2. 递归出口：确定递归到何时终止，即递归的终止（结束、边界）条件
+					- 但是，递归方法并不能降低程序的时间复杂度，而且，递归时函数的嵌套调用使用系统堆栈，控制不好会导致<span class="red">堆栈溢出</span>(stack overflow) 
+				  </textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [2255 -- Tree Recovery (poj.org)](http://poj.org/problem?id=2255)
+					------
+					<div class="right" style="float: right; margin-right: 200px;">
+
+					![img](img/2-2.png)
+					</div>
+
+					- 已知二叉树
+						- 先序遍历为DBACEGF
+						- 中序遍历为ABCDEFG
+					
+					- 求后序遍历
+						- ACBFGED
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="4-16|22" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						void postorder(char *left, char *right, int n)
+						{
+							char root = left[0];
+							if (n > 0)
+							{
+								int m = strchr(right, root) - right;
+								//后序遍历左子树
+								postorder(left + 1, right, m); 
+								//后序遍历右子树
+								postorder(left + m + 1, right + m + 1, n - m - 1); 
+								printf("%c", root);
+							}
+						}
+						int main()
+						{
+							char s1[30], s2[30];
+							while (~scanf("%s%s", s1, s2))
+							{
+								postorder(s1, s2, strlen(s1));
+								printf("\n");
+							}
+							return 0;
+						}
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### [1731 -- Orders (poj.org)](http://poj.org/problem?id=1731)
+					------
+					- 给出字母序列，将这个序列中字母组成的所有可能<span class="blue">排列/置换</span>按<span class="blue">字典序</span>输出
+					- 输入：
+					bbjd
+					- 输出：
+					bbdj  bbjd  bdbj  bdjb  bjbd  bjdb  dbbj  dbjb  djbb  jbbd  jbdb  jdbb
+					<br/><br/>
+					- 实现：
+						1. ​递归（手写）
+						2. C++ STL中的[next_permutation](http://www.cplusplus.com/reference/algorithm/next_permutation)函数
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-15|16-26|31-32" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						#include <algorithm>
+						using namespace std;
+						char a[200]; //输入序列
+						char b[200]; //输出序列
+						bool v[200]; //记录序列中字母是否被使用
+						void perm(unsigned int k)
+						{
+							char c = '\0'; //记录本层递归使用的字母
+							if (k == strlen(a))
+							{
+								b[k] = '\0';
+								puts(b);
+							}
+							for (int i = 0; a[i]; i++)
+							{
+								if (!v[i] && a[i] != c)
+								{
+									b[k] = a[i];
+									v[i] = true;
+									c = a[i];
+									perm(k + 1);
+									v[i] = false;
+								}
+							}
+						}
+						int main()
+						{
+							scanf("%s", a);
+							sort(a, a + strlen(a));
+							perm(0);
+							return 0;
+						}
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 2.3 分治法
+					------
+					- 分治法就是将原问题分解成规模较小但是与原问题类似的子问题，通过递归来求解这些子问题，再将子问题的解合并来求出原问题的解的方法
+					- 分治在递归的过程中有三步：
+						1. 分解：将原问题分解成规模较小但是与问题类似的子问题
+						2. 求解：递归求解子问题，子问题规模足够小时直接求解
+						3. 合并：将子问题的解合并，求出原问题的解
+
+				  </textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## `MapReduce`
+					------	
+					![img](img/2-3.png)			
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2388 -- Who's in the Middle (poj.org)](http://poj.org/problem?id=2388)
+					------
+					- 求n个数的<span class="blue">中位数</span>，n为奇数
+					<br/><br/>
+					- 分析
+						- 如果n个数是有序的，那么第$\frac{n+1}{2}$个数就是所求的中位数
+						- 在C语言提供了排序函数[qsort](http://www.cplusplus.com/reference/cstdlib/qsort/)，C++语言提供了[sort](http://www.cplusplus.com/reference/algorithm/sort/)，
+						它们的实现都是基于快速排序
+						- <span class="blue">快速排序</span>(Quicksort)，又称<span class="blue">划分交换排序</span>(partition-exchange sort)，简称<span class="blue">快排</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## 快速排序
+						------
+						<div class="left" style="float: left; width: 40%;">
+
+						![img](img/2-4.png)	
+						</div>
+						<div class="right" style="float: right; width: 60%;">
+
+						1. 选取数组a最右边元素作为基准值x，两个指针i和j最初都在序列最左边 <!-- .element: class="fragment" data-fragment-index="1" -->
+						2. 用a[j]和x的值进行比较，如果a[j]小于x，则交换a[i]和a[j]，同时将i和j向右移动；如果a[j]大于等于x，则j右移，i不动 <!-- .element: class="fragment" data-fragment-index="2" -->
+						3. 当j移动到最右边时，i的左侧元素都小于x，右侧都大于等于x <!-- .element: class="fragment" data-fragment-index="3" -->
+						4. 最后将x和a[i]值交换。序列就被i分成了左右两部分 <!-- .element: class="fragment" data-fragment-index="4" -->
+						
+						<span class="fragment fade-in">
+
+						- 交换过程结束后，两个3改变了之前的顺序，这种情况称为排序的<span class="fragment highlight-red">不稳定性</span>，所以这种快速排序算法是不稳定的排序算法
+						</span>
+						</div>
+					  </script>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-20|21-30|37" ><script type="text/template">
+						#include <cstdio>
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						int a[10005];
+						//对数组进行重排，将整个数组通过i位置划分为左右两个数组
+						int partition(int left, int right)
+						{
+							int i = left;
+							for (int j = left; j < right; j++)
+							{
+								if (a[j] < a[right])
+								{
+									swap(a[j], a[i]);
+									i++;
+								}
+							}
+							swap(a[i], a[right]);
+							return i;
+						}
+						//递归对左右两部分分别进行快速排序
+						void quickSort(int left, int right)
+						{
+							if (left < right)
+							{
+								int i = partition(left, right);
+								quickSort(left, i - 1);
+								quickSort(i + 1, right);
+							}
+						}
+						int main()
+						{
+							int n;
+							scanf("%d", &n);
+							for (int i = 1; i <= n; i++)
+								scanf("%d", &a[i]);
+							quickSort(1, n);
+							printf("%d\n", a[(n + 1) / 2]);
+							return 0;
+						}														
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2299 -- Ultra-QuickSort (poj.org)](http://poj.org/problem?id=2299)
+					------
+					- 通过交换相邻元素进行排序，对于一个给定的无序序列a[1…n]，计算最终完成升序排列需要交换的次数
+					<br/><br/>
+					- 分析
+						- <span class="blue">冒泡排序</span>，所求的交换次数也就是计算无序序列的<span class="blue">逆序对</span>数目，冒泡排序的时间复杂度是$O(n^2)$
+						- 求逆序对数目效率更高的方法是利用<span class="blue">归并排序</span>，可以做到$O(nlogn)$的时间复杂度
+						- 归并的具体方法是将排好序的两个数组的元素依次比较，将其中较小的依次放入一个辅助数组b中，因为两个数组已经排序，比较的过程直接从左边到最右边即可。最后用b替换原来的a，进行上一层的合并操作
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5,8-20|21-26|28-37|46" ><script type="text/template">
+						#include <cstdio>
+						using namespace std;
+						const int N = 500005;
+						int a[N], b[N];
+						long long cnt; //所求的交换次数(逆序对个数)
+						void merge(int left, int mid, int right)
+						{
+							int i = left;    		// i指向a[left…mid]最左侧元素
+							int j = mid + 1; 		// j指向a[mid+1…right]最左侧元素
+							int k = 0;       		// k指向b数组将要写入元素的位置
+							while (i <= mid && j <= right)
+							{
+								if (a[i] > a[j])
+								{
+									b[k++] = a[j++];
+									cnt += mid - i + 1;
+								}
+								else
+									b[k++] = a[i++];
+							}
+							while (i <= mid)
+								b[k++] = a[i++];
+							while (j <= right)
+								b[k++] = a[j++];
+							while (k--)
+								a[left + k] = b[k];
+						}
+						void mergeSort(int left, int right)
+						{
+							if (left < right)
+							{
+								int mid = (left + right) / 2;
+								mergeSort(left, mid);
+								mergeSort(mid + 1, right);
+								merge(left, mid, right);
+							}
+						}
+						int main()
+						{
+							int n;
+							while (scanf("%d", &n) && n)
+							{
+								for (int i = 0; i < n; i++)
+									scanf("%d", &a[i]);
+								cnt = 0;
+								mergeSort(0, n - 1);
+								printf("%lld\n", cnt);
+							}
+							return 0;
+						}																		
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 二分查找
+					------	
+					![img](img/2-5.png)			
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1905 -- Expanding Rods (poj.org)](http://poj.org/problem?id=1905)
+					------
+					- 细棒长度$L$，两端固定，加热后膨胀为一段圆弧，长度变为
+					$$L'=(1+n\cdot C)\cdot L$$
+					$n$为变化的温度，$C$为膨胀系数，求细棒中心移动的距离
+					
+					![img](img/2-6.png)		
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1905 -- Expanding Rods (poj.org)](http://poj.org/problem?id=1905)
+					------
+					![img](img/2-6.png)		
+					<span class="small">
+					$$R^2=(R-x)^2+(L/2)^2\Rightarrow R=\frac{x^2+(L/2)^2}{2x}$$
+					$$sin⁡θ=\frac{L/2}{R}\Rightarrow θ=sin^{-1}(\frac{L/2}{R})$$
+					代入 $L'=2Rθ$ 可得$x$和$L'$的关系
+					</span>
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-11|20-30" ><script type="text/template">
+						#include <cstdio>
+						#include <cmath>
+						#include <cfloat>
+						using namespace std;
+						double L;
+						double f(double x)
+						{
+							double R = (x * x + L * L / 4) / (2 * x);
+							double a = asin(L / (2 * R));
+							return 2 * R * a;
+						}
+						int main()
+						{
+							double n, C;
+							while (scanf("%lf%lf%lf", &L, &n, &C))
+							{
+								if (L == -1 && n == -1 && C == -1)
+									break;
+								double L1 = (1 + n * C) * L;
+								double a = 0;
+								double b = L / 2;
+								double c;
+								while (b - a > FLT_EPSILON)
+								{
+									c = (a + b) / 2;
+									if (f(c) >= L1)
+										b = c;
+									else
+										a = c;
+								}
+								printf("%.3f\n", c);
+							}
+							return 0;
+						}								
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 三分查找
+					------	
+					![img](img/2-7.png)		
+					- 由(a)(b)可以看出，f(LT)大于f(RT)时，可以将右侧区间删掉
+					- 由(c)(d)可以看出，f(LT)小于f(RT)时，可以将左侧区间删掉		
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[2420 -- A Star not a Tree? (poj.org)](http://poj.org/problem?id=2420)
+					------
+					- 给出平面上n个点的坐标，找到一点，到这些点的距离和最小
+					<br/><br/>
+					- 分析
+						- 所求的就是几何学中的<span class="blue">费马点</span>，显然几何方法不适用于计算机，在空间范围内搜索该点，可以采用分治策略进行，不断缩小求解空间，直到找到符合精度要求的解
+						- 本题的坐标空间x和y都在0到10000之间，随着x和y的增加，解并不是单调变化，无法用二分搜索来实现。问题区间不满足单调性，但是符合<span class="blue">凸函数</span>的性质，求区间最值可以采用三分的方法
+						
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-13|14-26|27-39" ><script type="text/template">
+							#include <cstdio>
+							#include <cmath>
+							using namespace std;
+							double x[101], y[101];
+							int n;
+							//计算某点(x1,y1)到其他点的距离和
+							double f(double x1, double y1)
+							{
+								double sum = 0;
+								for (int i = 0; i < n; ++i)
+							sum += sqrt((x1 - x[i]) * (x1 - x[i]) + (y1 - y[i]) * (y1 - y[i]));
+								return sum;
+							}
+							//对点的y值进行三分搜索，找到每个固定点x1值对应的使距离和最小的y值
+							double fy(double x1)
+							{
+								double l = 0;
+								double r = 10000;
+								while (r - l > 0.1)
+								{
+									double lt = (l * 2 + r) / 3;
+									double rt = (l + r * 2) / 3;
+									f(x1, lt) < f(x1, rt) ? r = rt : l = lt;
+								}
+								return f(x1, l);
+							}
+							//对点的x值进行三分搜索，找到使距离和最小的x值
+							double fx()
+							{
+								double l = 0;
+								double r = 10000;
+								while (r - l > 0.1)
+								{
+									double lt = (l * 2 + r) / 3;
+									double rt = (l + r * 2) / 3;
+									fy(lt) < fy(rt) ? r = rt : l = lt;
+								}
+								return fy(l);
+							}
+							int main()
+							{
+								scanf("%d", &n);
+								for (int i = 0; i < n; ++i)
+									scanf("%lf%lf", &x[i], &y[i]);
+								printf("%.0f\n", fx());
+								return 0;
+							}
+					</script></code></pre>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #5 贪心算法
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 5.1 基础贪心算法问题
+					------
+					- <span class="blue">贪心算法</span>(greedy algorithm)的基本思路：在一个决策序列中，每一步单独的决策其优劣有一个度量标准来衡量；每一步决策总是选择在度量标准下最优的那个分支（决定）；每一步决策一旦决定便不再更改（不同于回溯算法）
+					- <span class="blue">排序</span>是贪心算法的基本操作，掌握系统的排序函数是必要条件
+					- 因为贪心算法并没有枚举所有情况，所以效率比较高，但是必须保证算法的正确性
+					- 背包问题也可以使用贪心算法来解，但是通常使用动态规划的方法
+					- 字符串中的<span class="blue">哈夫曼编码</span>，图算法中的<span class="blue">最小生成树</span>采用的都是贪心算法的思想
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2069 -- Super Star (poj.org)](http://poj.org/problem?id=2069)
+					------
+					- <span class="blue">最小包围球</span>(Smallest bounding sphere):将星星看作空间中的点，求包含所有给定星星的最小球体
+
+					![img](img/5-1.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	模拟退火法
+					------
+					- <span class="blue">模拟退火法</span>(SA,Simulated annealing)：一种通用概率算法，通过模拟金属退火的过程，在一定时间内寻找在一个很大搜寻空间中的近似最优解
+					- 选取开始点，进行多轮迭代，每次在当前状态附近随机生成解空间，在解空间中选择最优的进行下一轮迭代，最终使得结果收敛到最优解附近结束
+
+					![gif](img/sa.gif)
+					</textarea>
+				</section>				
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="17-21|22-37" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							#include <cmath>
+							#include <cfloat>
+							using namespace std;
+							struct point
+							{
+								double x, y, z;
+								point() {}
+								point(double x, double y, double z) : x(x), y(y), z(z) {}
+							} P[31];
+							int n;
+							double dis(point p0, point p)
+							{
+							return sqrt((p0.x - p.x) * (p0.x - p.x) + (p0.y - p.y) * (p0.y - p.y) + (p0.z - p.z) * (p0.z - p.z));
+							}
+							//模拟退火法
+							double SA()
+							{
+								double minr = FLT_MAX;     //所求的最小半径
+								point p0 = point(0, 0, 0); //初始点
+								//t为温度，FLT_EPSILON为临界温度，0.98为降温速率
+								for (double t = 100; t > FLT_EPSILON; t *= 0.98)
+								{
+									int k = 0; //保存最远点位置
+									for (int i = 1; i < n; i++)
+										if (dis(p0, P[i]) > dis(p0, P[k]))
+											k = i;
+									double maxr = dis(p0, P[k]); //maxr为最远距离
+									minr = min(minr, maxr);
+									//温度变化空间向距离最远点变化
+									p0.x += (P[k].x - p0.x) * t / maxr;
+									p0.y += (P[k].y - p0.y) * t / maxr;
+									p0.z += (P[k].z - p0.z) * t / maxr;
+								}
+								return minr;
+							}
+							int main()
+							{
+								while (scanf("%d", &n) && n)
+								{
+									for (int i = 0; i < n; ++i)
+										scanf("%lf%lf%lf", &P[i].x, &P[i].y, &P[i].z);
+									printf("%.5f\n", SA());
+								}
+								return 0;
+							}
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 5.2 区间覆盖问题
+					------
+					- 贪心算法的一类应用就是<span class="blue">区间覆盖问题</span>，这些问题共有的特征是给出一些具有左右端点的线段（<span class="blue">区间</span>），这些线段存在于一个给定的区间内，在这个区间内求不同的覆盖问题，可以分为以下几种：
+						1. 最大不相交线段数：在区间内找到尽可能多的线段，线段彼此之间不重叠
+						2. 区间完全覆盖：找到最少的线段，完全覆盖给定的区间
+						3. 区间选点问题：找到最少的点，使得每个线段中至少包含一个点
+						4. 线段覆盖问题：找到最少的线段，覆盖所有的线段
+						5. 线段重叠问题：将重叠的线段连接到一起，计算合并后线段的数量
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1089 -- Intervals (poj.org)](http://poj.org/problem?id=1089)
+					------
+					- There is given the series of $n$ closed intervals $[a_i; b_i]$, where $i=1,2,...,n$.
+					 The sum of those intervals may be represented as a sum of closed pairwise non-intersecting intervals.
+					- The task is to find such representation with the minimal number of intervals. 
+					- The intervals of this representation should be written in the output file in acceding order. 
+					We say that the intervals $[a; b]$ and $[c; d]$ are in ascending order if, and only if $a \leq b < c \leq d$.
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					<div class="left" style="float: left;width: 30%; zoom:80%">
+
+					| Input  |      |
+					| ------ | ---- |
+					| 5      | 6    |
+					| 1      | 4    |
+					| 10     | 10   |
+					| 6      | 9    |
+					| 8      | 10   |
+					| <br/><br/>Output |      |
+					| 1      | 4    |
+					| 5      | 10   |
+					</div>
+					<div class="right" style="float: right;width: 70%;">
+						
+					![img](img/5-2.png)
+					</div>
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="9,12,14|15-25" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 50005;
+							int main()
+							{
+								int n;
+								scanf("%d", &n);
+								pair<int, int> a[N]; //保存由左端点和右端点组成的区间
+								for (int i = 0; i < n; i++)
+									scanf("%d%d", &a[i].first, &a[i].second);
+								sort(a, a + n);
+								printf("%d ", a[0].first);
+								int R = a[0].second; //当前的右端点
+								for (int i = 1; i < n; i++)
+								{
+									if (a[i].first > R)
+									{
+										printf("%d\n", R);
+										printf("%d ", a[i].first);
+										R = a[i].second;
+									}
+									else
+										R = max(R, a[i].second);
+								}
+								printf("%d\n", R);
+								return 0;
+							}							
+					</script></code></pre>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

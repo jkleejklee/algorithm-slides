@@ -1,0 +1,744 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.red {
+			color: red !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.small {
+			zoom: 70%;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #4 动态规划
+			</section>
+			<section>	
+				<section data-markdown>
+					<textarea data-template>
+					## 4.1 基础动态规划问题
+					------
+					- 动态规划的一个特征是问题有<span class="blue">重叠的子问题</span>，与分治算法类似，可以将原问题分解为子问题，使用相同的规则进行求解
+					- 动态规划的另一个重要特征是<span class="blue">最优子结构</span>(Optimal substructure) ，依据的是贝尔曼最优化原理(Bellman's principle of optimality) ：
+					作为整个过程的最优策略具有这样的性质，无论过去的状态和决策如何，对先前决策所形成的状态而言，余下的诸决策必构成最优策略
+					- 以上两点也是判断一个问题是否适用动态规划的主要依据
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					## 解最短路问题
+					------
+					<div class="left" style="float: left; width: 70%;">
+
+					![img](img/4-1.png)	
+					![img](img/4-2.png)	
+					</div>
+					<div class="right" style="float: right; width: 30%; font-size:large; text-align: left;">
+
+					1. 阶段(stage): $k$
+					2. 状态(state): $s_k$
+					|      |       | 
+					| ---- | ----- | 
+					| 阶段1 | $s_1=[A]$| 
+					| 阶段2 | $s_2=[B_1,B_2,B_3]$| 
+					| 阶段3 | $s_3=[C_1,C_2,C_3]$| 
+					| 阶段4 | $s_4=[D_1,D_2]$| 
+					| 阶段5 | $s_5=[E]$| 
+					3. 决策(decision)
+					- 决策变量$x_k(s_k)$表示第𝑘阶段状态为$s_k$时对方案的选择. $D_k(s_k)$表示$k$阶段状态为$s_k$时决策允许的取值集合
+					- $D_2(B_1)=[C_1,C_2,C_3]$
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					## 解最短路问题
+					------
+					<div class="left" style="float: left; width: 70%;">
+
+					![img](img/4-1.png)	
+					![img](img/4-2.png)	
+					</div>
+					<div class="right" style="float: right; width: 30%; font-size:large; text-align: left;">
+
+					4. 策略(policy)和子策略(subpolicy)
+					- 动态规划问题各阶段决策组成的序列总体称为一个策略
+					- $[x_1(s_1),x_2(s_2),...,x_n(s_n)]$是$n$个阶段DP的一个策略
+					<br/><br/>
+					5. 状态转移
+					- 从$s_k$的某一状态值出发,当决策变量$x_k(s_k)$的取值决定后,下一阶段状态变量$s_{k+1}$的取值也随之确定.这种从上一阶段的某一状态到下一阶段某一状态称为状态转移
+					- $s_{k+1}=T(s_k,x_k(s_k))$
+					- 或 $s_{k+1}=T(s_k,x_k)$
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					## 解最短路问题
+					------
+					<div class="left" style="float: left; width: 70%;">
+
+					![img](img/4-1.png)	
+					![img](img/4-2.png)	
+					</div>
+					<div class="right" style="float: right; width: 30%; font-size:large; text-align: left;">
+
+					6. 目标函数
+					- 目标函数是用来衡量实现过程优劣的一种数量指标.它是从状态$s_k$出发至过程最终,当采取某种策略时,按预定标准得到的效益值
+					- $V_{k,n}(s_k,x_k,s_{k+1},x_{k+1},...,s_n)$
+					<br/><br/>
+					7. 最优目标函数
+					- 对某一确定状态选取最优策略后得到的指标函数值,也就是对应某一最优子策略的某种效益度量
+					- $f_k(s_k)=optV_{k,n}$
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-1.png)
+					$$f_k(s_k)=\min \limits_{x_k\in D_k(s_k),k=4,3,2,1} [d_k(s_k,x_k)+f_{k+1}(s_{k+1})]$$
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-a.png)
+					<span class="small">
+					$$f_4(D_1)=d(D_1\rightarrow E)+f_5(E)=5+0=5$$
+					最优决策：$D_1\rightarrow E$ 
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					
+					![img](img/4-b.png)
+					<span class="small">
+					$$f_4(D_2)=d(D_2\rightarrow E)+f_5(E)=2+0=5$$
+					最优决策：$D_2\rightarrow E$ 
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					
+					![img](img/4-c.png)
+					<span class="small">
+					$$f_3(C_1)=min \begin{Bmatrix}(C_1,D_1)+f_4(D_1)\\\ (C_1,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}3+5\\\ 9+2 \end{Bmatrix} =8$$
+					最优决策：$C_1\rightarrow D_1$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-d.png)
+					<span class="small">
+					$$f_3(C_2)=min \begin{Bmatrix}(C_2,D_1)+f_4(D_1)\\\ (C_2,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}6+5\\\ 5+2 \end{Bmatrix} =7$$
+					最优决策：$C_2\rightarrow D_2$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-e.png)
+					<span class="small">
+					$$f_3(C_3)=min \begin{Bmatrix}(C_3,D_1)+f_4(D_1)\\\ (C_3,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}8+5\\\ 10+2 \end{Bmatrix} =12$$
+					最优决策：$C_3\rightarrow D_2$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-f.png)
+					<span class="small">
+					$$f_2(B_1)=min \begin{Bmatrix}(B_1,C_1)+f_3(C_1)\\\ (B_1,C_2)+f_3(C_2)\\\ (B_1,C_3)+f_3(C_3) \end{Bmatrix} =min \begin{Bmatrix}12+8\\\ 14+7\\\ 10+12 \end{Bmatrix} =20$$
+					最优决策：$B_1\rightarrow C_1$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-g.png)
+					<span class="small">
+					$$f_2(B_3)=min \begin{Bmatrix}(B_3,C_1)+f_3(C_1)\\\ (B_3,C_2)+f_3(C_2)\\\ (B_3,C_3)+f_3(C_3) \end{Bmatrix} =min \begin{Bmatrix}13+8\\\ 12+7\\\ 11+12 \end{Bmatrix} =19$$
+					最优决策：$B_3\rightarrow C_2$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-h.png)
+					<span class="small">
+					$$f_1(A)=min \begin{Bmatrix}(A,B_1)+f_2(B_1)\\\ (A,B_2)+f_2(B_2)\\\ (A,B_3)+f_2(B_3) \end{Bmatrix} =min \begin{Bmatrix}2+21\\\ 5+14\\\ 1+19 \end{Bmatrix} =19$$
+					最优决策：$A\rightarrow B_2$
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+
+					![img](img/4-i.png)
+					- 从$A$到$E$的最短路径为19
+					- 路线为$A\rightarrow B_2\rightarrow C_1 \rightarrow D_1 \rightarrow E$ 
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1163 -- The Triangle (poj.org)](http://poj.org/problem?id=1163)
+					------
+					- 如图的数字三角形，从顶部出发，每一个结点可以选择向左或向右走，要求找到一个从上到下的路径，路径上数字的和最大
+
+					![img](img/4-3.png)
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="7,12-14" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							int main()
+							{
+								int n;
+								int D[355][355]; //存储到该点的最大路径
+								scanf("%d", &n);
+								for (int i = 0; i < n; i++)
+									for (int j = 0; j <= i; j++)
+										scanf("%d", &D[i][j]);
+								for (int i = n - 2; i >= 0; i--)
+									for (int j = 0; j <= i; j++)
+										D[i][j] += max(D[i + 1][j], D[i + 1][j + 1]);
+								printf("%d\n", D[0][0]);
+								return 0;
+							}								
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1651 -- Multiplication Puzzle (poj.org)](http://poj.org/problem?id=1651)
+					------
+					- n个数排成一排，从中间位置取走一个数，和它前后两个数相乘得到一个乘积值，再取一个数，继续计算，
+					直到剩下的最后三个数相乘，将所有乘积相加，求这个和的最小值
+					- 例： 10 1 50 20 5
+						- 依次取1,20,50: 
+							- 10✕1✕50+50✕20✕5+10✕50✕5=500+5000+2500=8000
+						- 依次取50,20,1: 
+							- 1✕50✕20+1✕20✕5+10✕1✕5=1000+100+50=1150
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- <span class="blue">区间动态规划</span>方法
+						1. 定义二维数组D[i,j],i,j为区间左右两个边界
+						2. 子区间的长度逐渐递增，直到原问题的区间长度为止
+						3. 将子区间内的各种情况进行计算，保存最优值
+						4. 由子问题的值推导上一层问题的值，直到计算结束
+					- 用a[1...n]保存n个数,D[i,j]为i到j区间计算出来的和的最小值，区间长度s=j-i,在区间内取一个位置k，则D[i,j]为所有D[i,k]+D[k,j]+a[i]✕a[k]✕a[j]的最小值
+					
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="9,13-21" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							#include <climits>
+							using namespace std;
+							const int N = 105;
+							int main()
+							{
+								int n, a[N];
+								int D[N][N] = {0}; //D[i,j]为i到j区间计算出来的和的最小值
+								scanf("%d", &n);
+								for (int i = 1; i <= n; i++)
+									scanf("%d", &a[i]);
+								for (int s = 2; s <= n - 1; s++) //s为区间长度
+									for (int i = 1; i <= n - s; i++)
+									{
+										int j = i + s;
+										D[i][j] = INT_MAX;
+										for (int k = i + 1; k < j; k++) //k为区间内某位置
+								D[i][j] = min(D[i][j], D[i][k] + D[k][j] + a[i] * a[k] * a[j]);
+									}
+								printf("%d\n", D[1][n]);
+								return 0;
+							}							
+					</script></code></pre>
+				</section>	
+			</section>
+			<section>	
+				<section data-markdown>
+					<textarea data-template>
+					## 4.2 子序列问题
+					------
+					- <span class="blue">最长递增子序列</span>(Longest Increasing Subsequence, LIS) 
+						1. 动态规划解法，复杂度为$O(n^2)$
+						2. 二分查找 ，复杂度为$O(nlogn)$
+					
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2533 -- Longest Ordered Subsequence (poj.org)](http://poj.org/problem?id=2533)
+					------
+					- A numeric sequence of $a_i$ is ordered if $a_1 < a_2 < ... < a_N$. 
+					Let the subsequence of the given numeric sequence $(a_1, a_2, ..., a_N)$ be any sequence $(a_{i_1}, a_{i_2}, ..., a_{i_K})$, 
+					where $1 \leq i_1 < i_2 < ... < i_K \leq N$. 
+					- For example, sequence (1, 7, 3, 5, 9, 4, 8) has ordered subsequences,
+					 e. g., (1, 7), (3, 4, 8) and many others. All longest ordered subsequences are of length 4, e. g., (1, 3, 5, 8).
+					- Your program, when given the numeric sequence, must find the length of its longest ordered subsequence.
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- 动态规划实现最长递增子序列的具体方法
+						- 用数组$D[i]$储存到$a[i]$为止包含$a[i]$的最长递增子序列的长度
+						- $D[i]=max⁡(D[j])+1,1\leq j < i$且$a[j] < a[i]$
+
+					![img](img/4-4.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					<pre><code data-trim data-noescape data-line-numbers="10-20" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 1001;
+							int main()
+							{
+							  int n;
+							  scanf("%d", &n);
+							  int ans = 1;
+							  int D[N];
+							  for (int i = 0; i < n; i++)
+							  {
+							   int a[N];
+							   scanf("%d", &a[i]);
+							   D[i] = 1;
+							   for (int j = 0; j < i; j++)
+							     if (a[j] < a[i]) //<<<<<<<
+							       D[i] = max(D[i], D[j] + 1);
+							   ans = max(ans, D[i]);
+							  }
+							  printf("%d\n", ans);
+							  return 0;
+							}
+					</script></code></pre>
+					
+					1. 最长不降子序列长度，改成`a[j]≤a[i]` 
+					2. 最长递减子序列长度，改成`a[j]>a[i]` 
+					3. 最长不升子序列长度，改成`a[j]≥a[i]` 
+					</textarea>
+				</section>	
+				<section data-markdown>
+					<textarea data-template>
+					## 搜索方法
+					------
+					<pre><code data-trim data-noescape data-line-numbers="9-19" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 1001;
+							int main()
+							{
+								int n;
+								scanf("%d", &n);
+								int s[N];
+								int k = 0; //记录s中元素个数
+								while (n--)
+								{
+									int a;
+									scanf("%d", &a);
+									int m = lower_bound(s, s + k, a) - s; //s中小于a元素个数
+									s[m] = a;
+									if (m == k)
+									    k++;
+								}
+								printf("%d\n", k);
+								return 0;
+							}							
+					</script></code></pre>
+					</textarea>
+				</section>	
+			</section>
+
+			<section>	
+				<section data-markdown>
+					<textarea data-template>
+					## 4.3 最长公共子串问题
+					------
+					- <span class="blue">最长公共子序列 </span>(Longest Common Subsequence, LCS) 
+					是在一个序列集合中(通常为两个序列)查找所有序列中最长子序列的问题
+					- 两个序列通常为两个字符串，此类问题也称为求<span class="blue">最长公共子串</span>问题
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1458 -- Common Subsequence (poj.org)](http://poj.org/problem?id=1458)
+					------
+					- A subsequence of a given sequence is the given sequence with some elements (possible none) left out.
+					- Given a sequence $X=<x_1, x_2, ..., x_m>$ another sequence $Z=< z_1, z_2, ..., z_k>$ is a subsequence of $X$ 
+					if there exists a strictly increasing sequence $<i_1, i_2, ..., i_k>$ of indices of $X$ such that for all 
+					$j=1,2,...,k, x_{i_j}=z_j$
+					- For example, $Z=<a, b, f, c>$ is a subsequence of $X=<a, b, c, f, b, c>$ with	index sequence $<1, 2, 4, 6>$ 
+					- Given two sequences $X$ and $Y$ the problem is to find the length of the maximum-length common subsequence of $X$ and $Y$
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- $c[i,j]$表示从序列起点到 $x[i]$和$y[j]$时最长子序列的长度，则
+					$$c[i,j]=\begin{cases} c[i-1,j-1]+1, x[i]=y[j] \\\ max(c[i-1,j],c[i,j-1]), others \end{cases}$$
+
+					![img](img/4-5.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- 例如两个字符序列分别是BDCABA和ABCBDAB，计算c数组值的过程如图所示
+					
+					![img](img/4-6.png)
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="13-22" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							#include <cstring>
+							using namespace std;
+							const int N = 2005;
+							int main()
+							{
+								char a[N], b[N];
+								while (~scanf("%s %s", a, b))
+								{
+									int la = strlen(a);
+									int lb = strlen(b);
+									int c[N][N] = {0};
+									for (int i = 1; i <= la; i++)
+										for (int j = 1; j <= lb; j++)
+										{
+											if (a[i - 1] == b[j - 1])
+												c[i][j] = c[i - 1][j - 1] + 1;
+											else
+												c[i][j] = max(c[i - 1][j], c[i][j - 1]);
+										}
+									printf("%d\n", c[la][lb]);
+								}
+								return 0;
+							}							
+					</script></code></pre>
+				</section>	
+			</section>
+			<section>	
+				<section data-markdown>
+					<textarea data-template>
+					## 4.4 背包问题
+					------
+					- 一组物品具有重量和价格，在规定的总重量内，如何选择，使得价格最高，被称为<span class="blue">背包问题</span>(Knapsack problem)
+					- 这里对几类简单的背包问题进行研究。背包问题的详细分析和其他扩展问题，详见[背包问题九讲 (github.com)](https://github.com/tianyicui/pack)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[3624 -- Charm Bracelet (poj.org)](http://poj.org/problem?id=3624)
+					------
+					- Bessie has gone to the mall's jewelry store and spies a charm bracelet. Of course, 
+					she'd like to fill it with the best charms possible from the $N(1\leq N\leq 3,402)$ available charms. 
+					- Each charm $i$ in the supplied list has a weight $W_i(1\leq W_i\leq400)$, a 'desirability' factor $D_i(1\leq D_i\leq 100)$,
+					 and can be used at most once. Bessie can only support a charm bracelet whose weight is no more than $M(1\leq M\leq 12,880)$.
+					- Given that weight limit as a constraint and a list of the charms with their weights and desirability rating, deduce the maximum possible sum of ratings.</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	题目分析
+					------
+					- $n$个物品，每个物品有$w$和$d$属性，要求选出一定的物品，在$\sum w$不超过$m$的情况下，使得$\sum d$最大
+					- 输入：
+
+					<div class="left" style="float: left;width: 50%;">
+					
+					|   4    |  6   |
+					| :----: | :----: |
+					|<span class="fragment highlight-blue" data-fragment-index="1">1</span>|<span class="fragment highlight-blue" data-fragment-index="1">4</span>  |
+					|   2    |  6   |
+					|<span class="fragment highlight-blue" data-fragment-index="1">3</span>|<span class="fragment highlight-blue" data-fragment-index="1">12</span> |
+					|<span class="fragment highlight-blue" data-fragment-index="1">2</span>|<span class="fragment highlight-blue" data-fragment-index="1">7</span>  |
+					</div>
+					<div class="right" style="float: right;width: 50%; font-size:90%; ">
+
+					|  $n$  |  $m$  |
+					| :---: | :---: |
+					| $w_1$ | $d_1$ |
+					| $w_2$ | $d_2$ |
+					| $w_3$ | $d_3$ |
+					| $w_4$ | $d_4$ 
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	0-1背包问题
+					------
+					- <span class="blue">0-1背包问题</span>: 每种物品仅有一件，可以选择放或不放
+					- 用动态规划来求解背包问题，通过子问题定义状态：即$F[i,v]$表示前$i$件物品恰放入一个容量为$v$的背包可以获得的最大价值，
+					则当前最优解要么包含第$i$种物品，要么不包含第$i$种物品，状态转移方程:
+					$$F[i,v]=\max\begin{cases} F[i-1,v] \\\ F[i-1,v-c[i]+w[i]] \end{cases} $$
+					- 时间、空间复杂度均为$NV$，只用一维数组$F[j]$可以降低空间复杂度
+					- 初始化：
+						- 恰好装满 $F[0]=0$，$F[1\ldots V]=-\infty$
+						- 不要求装满 $F[1\ldots V]=0$
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-10|19,21" ><script type="text/template">
+							#include <cstdio>
+							using namespace std;
+							#define MAX(a, b) (a > b ? a : b)
+							int F[15000], V;
+							//0-1背包，其中c为费用，w为价值，V为最大容量
+							void zeroonePack(int c, int w)
+							{
+								for (int v = V; v >= c; v--)
+									F[v] = MAX(F[v], F[v - c] + w);
+							}
+							int main()
+							{
+								int n;
+								scanf("%d%d", &n, &V);
+								while (n--)
+								{
+									int w, d;
+									scanf("%d%d", &w, &d);
+									zeroonePack(w, d); //本题中对应的费用为w，价值为d
+								}
+								printf("%d\n", F[V]);
+								return 0;
+							}
+													
+					</script></code></pre>
+				</section>	
+				<section data-markdown>
+					<textarea data-template>
+					###	[1384 -- Piggy-Bank (poj.org)](http://poj.org/problem?id=1384)
+					------
+					- $n$种不同的硬币，有两个属性，$p$代表金额，$w$代表重量，钱罐空时重$e$，满时重$f$，计算满时钱罐里最小可能的总金额是多少
+					- 输入：
+
+					<div class="left" style="float: left;width: 50%;">
+					
+					|   10    |  110   |
+					| :----: | :----: |
+					|   2    |      |
+					|   1    |  1   |
+					|<span class="fragment highlight-blue" data-fragment-index="1">30</span>|<span class="fragment highlight-blue" data-fragment-index="1">50</span> |
+					</div>
+					<div class="right" style="float: right;width: 50%; font-size:90%; ">
+
+					|  $e$  |  $f$  |
+					| :---: | :---: |
+					| $n$   |       |
+					| $p_1$ | $w_1$ |
+					| $p_2$ | $w_2$ |
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	完全背包问题
+					------
+					- <span class="blue">完全背包问题</span>: 有$n$种物品和一个容量为$V$的背包，每种物品都有无限件可用
+					- 在0-1背包基础上，将添加第$i$件物品的情况考虑到已经选择过第$i$件物品的情况。
+						- 0-1背包：$v=V\rightarrow 0$,保证每件物品选一次
+						- 完全背包：$v=0\rightarrow V$,每种物品可选无限件
+					- 初始化：
+						- 恰好装满$F[0]=0$，$F[1\ldots V]=-\infty$
+						- 不要求装满 $F[1\ldots V]=0$
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-11|21-22,27" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int INF = 0x3f3f3f3f;
+							int V, F[10001];
+							//完全背包，其中c为费用，w为价值，V为最大容量
+							void completePack(int c, int w)
+							{
+								for (int v = c; v <= V; v++)
+									F[v] = min(F[v], F[v - c] + w);
+							}
+							int main()
+							{
+								int t;
+								scanf("%d", &t);
+								while (t--)
+								{
+									int e, f, n;
+									scanf("%d%d%d ", &e, &f, &n);
+									scanf("");
+									V = f - e;
+									fill(F + 1, F + V + 1, INF);
+									while (n--)
+									{
+										int p, w;
+										scanf("%d%d", &p, &w);
+										completePack(w, p); //本题中对应的费用为w，价值为p
+									}
+									if (F[V] == INF)
+										printf("This is impossible.\n");
+									else
+							printf("The minimum amount of money in the piggy-bank is %d.\n", F[V]);
+								}
+								return 0;
+							}						
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1276 -- Cash Machine (poj.org)](http://poj.org/problem?id=1276)
+					------
+					- 有$N$台提款机，每台提款机提供不同数量$n_i$和面值$D_i$的货币，求这些机器能提取的不超过指定限额$cash$的最大金额
+
+					| $cash$ | $N$    | $n_1$   | $D_1$   | $n_2$   | $D_2$   | $n_3$   | $D_3$   | $n_N$   | $D_N$   |
+					| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+					| 735  | 3    | 4    | 125  | 6    | 5    | 3    | 350  |      |      |
+					| 633  | 4    | 500  | 30   | 6    | 100  | 1    | 5    | 0    | 1    |
+
+					<span class="blue">
+
+					| $output$ | $n_1$   | $D_1$   | $n_2$   | $D_2$   | $n_3$   | $D_3$   | $n_N$   | $D_N$   |
+					| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+					| 735  | 3    | 125  | 2    | 5    | 1    | 350  |      |      |
+					| 630  | 1  | 30   | 6    | 100  | 0    | 5    | 0    | 1    |
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	多重背包问题
+					------
+					- <span class="blue">多重背包问题</span>: 一种物品有$m$个(既不是固定的1个，也不是无数个)
+					- 多重背包$c$为费用，$w$为价值，$m$为数量
+						- 当$c\times m$超过$V$，直接采用完全背包
+						- 否则将$m$进行拆分，拆分成$1,2,4,…,2^k-1,𝑚−(2^k-1)$
+					- 然后进行0-1背包
+					- 例如$m=13$，拆成$1,2,4,6$
+					
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-16|17-33|39,44,46" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 100001;
+							int V; //指定限额的最大金额
+							int F[N];
+							void zeroonePack(int c, int w)
+							{
+								for (int v = V; v >= c; v--)
+									F[v] = max(F[v], F[v - c] + w);
+							}
+							void completePack(int c, int w)
+							{
+								for (int v = c; v <= V; v++)
+									F[v] = max(F[v], F[v - c] + w);
+							}
+							//多重背包，其中c为费用，w为价值，m为数量
+							void multiplePack(int c, int w, int m)
+							{
+								if (c * m >= V)
+								{
+									completePack(c, w);
+									return;
+								}
+								int k = 1;
+								while (k < m)
+								{
+									zeroonePack(k * c, k * w);
+									m -= k;
+									k <<= 1;
+								}
+								zeroonePack(m * c, m * w);
+							}
+							int main()
+							{
+								int n;
+								while (~scanf("%d%d", &V, &n))
+								{
+									fill(F, F + N, 0);
+									while (n--)
+									{
+										int m, d;
+										scanf("%d%d", &m, &d);
+										multiplePack(d, d, m); //本题中费用和价值都是d，对应数量为m
+									}
+									printf("%d\n", F[V]);
+								}
+								return 0;
+							}
+												
+					</script></code></pre>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

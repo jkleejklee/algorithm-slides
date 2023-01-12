@@ -1,0 +1,398 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.red {
+			color: red !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #3 基础数据结构
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 3.1 堆栈
+					------
+					![img](img/3-1.png)	
+					- <span class="blue">堆栈</span>(stack)是基础的数据结构，是一种<span class="blue">抽象数据类型</span>(ADT, Abstract Data Type)，其特点是后进先出(LIFO, Last In First Out)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 堆栈
+					------
+					- 在C++ STL中提供了专门的[stack](http://www.cplusplus.com/reference/stack/stack/)实现堆栈的基本功能
+					- 手动实现栈的操作也很容易，如果空间允许，可以使用数组，预先为堆栈分配足够的空间；如果空间紧张，也可以使用链表，动态的改变堆栈的空间
+					- 函数的调用和返回，在计算机系统中就是通过堆栈来实现的，系统堆栈空间并不是无限的，所以限制了函数调用的层次和规模，递归算法是函数的反复调用，所以更需要注意
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 基本操作
+					------
+					
+					```python
+					//将元素x加入堆栈S，S.top为栈顶位置，元素入栈，栈顶位置加1
+					PUSH(S,x) 
+						S.top = S.top + 1 
+						S[S.top] = x
+					
+					
+					//栈顶元素出栈，栈顶位置减1，返回栈顶元素的值
+					POP(S) 
+						if S.top>0
+							S.top = S.top - 1
+						return S[S.top + 1]
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1363 -- Rails (poj.org)](http://poj.org/problem?id=1363)
+					------
+					![img](img/3-2.png)	
+					- 如图的车站，可以通过操作将A序列转变成B序列。现在A为1到n的顺序序列，问给出一个序列B，能否通过A生成
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-8|15-20" ><script type="text/template">
+							#include <cstdio>
+							#include <stack>
+							using namespace std;
+							bool solve(int n)
+							{
+								int a = 1;
+								bool p = true; //判断是否能够成功输出B
+								stack<int> S;
+								while (n--)
+								{
+									int b; //B序列中的数字
+									scanf("%d", &b);
+									if (!b)
+										return false;
+									while (a <= b)
+										S.push(a++);
+									if (!S.empty() && S.top() == b)
+										S.pop();
+									else
+										p = false;
+								}
+								printf(p ? "Yes\n" : "No\n");
+								return true;
+							}
+							int main()
+							{
+								int n;
+								while (scanf("%d", &n) && n)
+								{
+									while (solve(n))
+										;
+									printf("\n");
+								}
+								return 0;
+							}							
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 3.2 队列
+					------
+					![img](img/3-3.png)	
+					- <span class="blue">队列(queue)</span>也是一种抽象数据类型，其特点是先进先出(FIFO, First-In-First-Out)
+					- 通常情况下，只允许在队列后端(rear)入队列(Enqueue)，在队列前端(front)出队列(Dequeue)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 队列
+					------
+					- 在C++ STL中提供了专门的[queue](http://www.cplusplus.com/reference/queue/)实现队列的基本功能
+					- 在队列的操作的过程中，每次进行1个元素的入队或者出队，如果元素数量过多，需要反复进行操作的话，这个时候不适合使用队列
+					- 在计算机系统中，缓冲区管理就是采用队列实现，当队列空间满而没有有效检查时，会出现<span class="red">缓冲区溢出(Buffer overflow)</span>，利用系统中的缓冲区溢出是黑客攻击系统的常用手段
+					- 队列通常采用链表或者数组来实现，使用数组的时候会出现<span class="red">“伪溢出”</span>的现象，就是数组进行一定量的入队出队操作之后，队列头还有空间，而队列尾已满而无法入队，为了解决这个问题，常常采用循环队列的方式
+					- 数组实现队列时，队列空间不方便扩展，而采用<span class="blue">链表</span>可以解决这个问题
+					- 在广度优先搜索中，通常要使用到队列
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 基本操作
+					------
+
+					```python
+					// 将元素x加入队列Q，队列尾位置加1
+					Enqueue(Q,x)
+						Q[Q.rear]=x
+						Q.rear=Q.rear+1
+					
+						
+					// 出队列，返回队列头元素，队列头位置加1
+					Dequeue(Q)
+						x=Q[Q.front]
+						Q.front=Q.front+1
+						return x						
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2823 -- Sliding Window (poj.org)](http://poj.org/problem?id=2823)
+					------
+					- An array of size $n\leqslant10^6$ is given to you. There is a sliding window of size $k$ which is moving from the very left of the array to the very right. 
+					You can only see the $k$ numbers in the window. Each time the sliding window moves rightwards by one position. 
+					- Following is an example:
+						- The array is [1 3 -1 -3 5 3 6 7], and $k$ is 3
+					- Your task is to determine the maximum and minimum values in the sliding window at each position.
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	example
+					------
+					
+					| Window position     | Minimum value | Maximum value |
+					| ------------------- | :-----------: | :-----------: |
+					| [1 3 -1] -3 5 3 6 7 | -1            | 3             |
+					| 1 [3 -1 -3] 5 3 6 7 | -3            | 3             |
+					| 1 3 [-1 -3 5] 3 6 7 | -3            | 5             |
+					| 1 3 -1 [-3 5 3] 6 7 | -3            | 5             |
+					| 1 3 -1 -3 [5 3 6] 7 | 3             | 6             |
+					| 1 3 -1 -3 5 [3 6 7] | 3             | 7             |
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="9-21|23-34" ><script type="text/template">
+							#include <cstdio>
+							#include <queue>
+							using namespace std;
+							int a[1000005];
+							int main()
+							{
+								int n, k;
+								scanf("%d%d", &n, &k);
+								//求区间最小值
+								deque<int> minQ;
+								for (int i = 1; i <= n; i++)
+								{
+									scanf("%d", &a[i]);
+									while (!minQ.empty() && a[i] < a[minQ.back()])
+										minQ.pop_back();
+									minQ.push_back(i);
+									if (minQ.front() < i - k + 1)
+										minQ.pop_front();
+									if (i >= k)
+										printf("%d ", a[minQ.front()]);
+								}
+								printf("\n");
+								//求区间最大值
+								deque<int> maxQ;
+								for (int i = 1; i <= n; i++)
+								{
+									while (!maxQ.empty() && a[i] > a[maxQ.back()])
+										maxQ.pop_back();
+									maxQ.push_back(i);
+									if (maxQ.front() < i - k + 1)
+										maxQ.pop_front();
+									if (i >= k)
+										printf("%d ", a[maxQ.front()]);
+								}
+								printf("\n");
+								return 0;
+							}
+														
+					</script></code></pre>
+				</section>
+			</section>
+		    <section>
+				<section data-markdown>
+					<textarea data-template>
+					## 3.3 堆
+					------
+					- <span class="blue">堆</span>(heap)是一种特别的完全二叉树，如果完全二叉树中每个节点的值都小于等于其子节点的值，称为<span class="blue">最小堆</span>(min heap)；
+					反之，如果每个节点的值都大于等于其子节点的值，称为<span class="blue">最大堆</span>(max heap)
+					- 在C++ STL中的优先队列[priority_queue](http://www.cplusplus.com/reference/queue/priority_queue/)就是堆的实现，对于堆的应用可以直接使用优先队列
+					- 使用堆实现的<span class="blue">堆排序</span>(Heapsort) ，平均时间复杂度为$𝑂(𝑛𝑙𝑜𝑔𝑛)$
+					- 优先队列常用于计算机操作系统中的任务调度，例如基于优先级的进程调度
+					- 字符串中用于求最优无前缀码即哈夫曼编码，使用最小堆来实现
+					- 在图算法中，使用优先队列解决基于贪心思想的最小生成树等问题
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[3253 -- Fence Repair (poj.org)](http://poj.org/problem?id=3253)
+					------
+					- 将一个长木板进行n-1次切割，切成n个小木板，切木板的花费等于木板的长度。给出最后切割后的长度，求费用最小的切割方案
+					- 例如
+						- 将21切割成8,5,8，可以先切成13和8，总费用21+13=34
+						- 如果先切成16和5，则总费用21+16=37，超过34
+					- 分析
+						- 假定最后切割完的所有木板在一个集合里，每次从集合中选出两个最短的，它们的和为一次切割费用，将它们合并后放回集合，重复以上操作，最后累计切割费用即可
+						- 题目的主要操作是从集合中每次取出最小的两个值，每次都重新排序的话算法复杂度会提高，而采用堆能很好的解决这个问题
+					
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-6|7-21|22-35|36-48|49-56|65|70-73" ><script type="text/template">
+							#include <cstdio>
+							#include <algorithm>
+							using namespace std;
+							const int N = 20005;
+							long long H[N]; 	//用一维数组H存储堆
+							int Size;       	//堆的大小
+							//返回节点x的父节点下标
+							int parent(int x)
+							{
+								return x / 2;
+							}
+							//返回节点x的左儿子节点下标
+							int left(int x)
+							{
+								return 2 * x;
+							}
+							//返回节点x的右儿子节点下标
+							int right(int x)
+							{
+								return 2 * x + 1;
+							}
+							//递归调整最小堆
+							void minheapify(long long *H, int x)
+							{
+								int y; //x、x左儿子、x右儿子三个节点中值最小的节点
+								int l = left(x);
+								int r = right(x);
+								y = (l <= Size && H[l] < H[x]) ? l : x;
+								y = (r <= Size && H[r] < H[y]) ? r : y;
+								if (y != x)
+								{
+									swap(H[x], H[y]); //最小节点不是x，就和x进行交换
+									minheapify(H, y); //向下递归调整所有节点
+								}
+							}
+							//返回堆中最小元素y并删除堆顶元素
+							int minheappop(long long *H)
+							{
+								long long y;
+								if (Size > 0)
+								{
+									y = H[1];
+									H[1] = H[Size]; //将数组中最后一个元素移到堆顶
+									Size--;
+									minheapify(H, 1); //从堆顶向下对堆进行调整
+								}
+								return y;
+							}
+							// 向堆中插入元素x
+							void minheapinsert(long long *H, long long x)
+							{
+								H[++Size] = x; //将元素x插入数组最后
+								//和其父节点比较，如果小于父节点，就把它和父节点交换，直到根节点为止
+							for (int i = Size; i > 1 && H[parent(i)] > H[i]; i = parent(i))
+									swap(H[parent(i)], H[i]);
+							}
+							int main()
+							{
+								int n;
+								scanf("%d", &n);
+								while (n--)
+								{
+									long long a;
+									scanf("%lld", &a);
+									minheapinsert(H, a); //将木板长度依次插入堆中
+								}
+								long long ans = 0;
+								while (Size > 1)
+								{
+									long long u = minheappop(H);
+									long long v = minheappop(H);
+									ans += u + v; //每次取出堆顶两个元素，将它们的和累加
+									minheapinsert(H, u + v);
+								}
+								printf("%lld\n", ans);
+								return 0;
+							}							
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					## 使用优先队列
+					------
+					<pre><code data-trim data-noescape data-line-numbers="2,8|13,17-22"><script type="text/template">
+							#include <cstdio>
+							#include <queue>
+							using namespace std;
+							int main()
+							{
+								int n;
+								long long a, ans = 0;
+							priority_queue<long long, vector<long long>, greater<long long> > Q;
+								scanf("%d", &n);
+								while (n--)
+								{
+									scanf("%lld", &a);
+									Q.push(a);
+								}
+								while (Q.size() > 1)
+								{
+									long long x = Q.top();
+									Q.pop();
+									long long y = Q.top();
+									Q.pop();
+									ans += x + y;
+									Q.push(x + y);
+								}
+								printf("%lld\n", ans);
+								return 0;
+							}
+						</script></code></pre>
+					</textarea>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

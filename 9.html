@@ -1,0 +1,365 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.small {
+			zoom: 70%;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #9 计算几何
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 9.1 点与线
+					------
+					- 在计算几何中，采用<span class="blue">向量</span>(vector，也称矢量)进行分析
+					- 空间中的点$p_1(x,y)$可以表示为向量$\vec{p_1}$，相当于原点指向该点的有向线段
+					- 两个向量的<span class="blue">叉积</span>定义为：$\vec{p_1}\times \vec{p_2}=p_1.x\times p_2.y-p_2.x\times p_1.y$
+					- 空间两点$p_0,p_1$构成有向线段表示为向量$\overrightarrow{p_0p_1}$，$p_0,p_1$构成有向线段表示为向量$\overrightarrow{p_0p_1}$，以线段端点计算的<span class="blue">叉积</span>公式为：
+					$$\begin{aligned}\overrightarrow{p_0p_1}\times \overrightarrow{p_0p_1}=(p_1.x-p_0.x)\times (p_2.y-p_0.y) \\\ -(p_2.x-p_0.x)\times (p_1.y-p_0.y) \end{aligned}$$
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 叉积的性质
+					------
+					- \> 0 表明以$p_0$为公共点，线段$p_0p_1$在$p_0p_2$顺时针方向
+					- < 0 表明以$p_0$为公共点，线段$p_0p_1$在$p_0p_2$逆时针方向
+					- = 0 表明线段$p_0p_1$和$p_0p_2$共线
+						- 经常用三个点的叉积值来判断点和线段的关系：
+					- \> 0 表明$p_2$在$p_0p_1$的逆时针方向
+					- < 0 表明$p_2$在$p_0p_1$的顺时针方向
+					- = 0 表明$p_2$在过$p_0p_1$的直线上
+
+					<span style="float: right;zoom: 50%; position: relative;top: 200px; right: 100px;">
+
+					![img](img/9-1.png)
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 线段相交判断
+					------
+					- $p_3p_4$和$p_3p_1$的叉积为负，$p_3p_4$与$p_3p_2$叉积为正，说明$p_1$和$p_2$跨立在$p_3p_4$两端，同理，$p_3$和$p_4$跨立在$p_1p_2$两端，两线段相交
+					- $p_3p_4$和$p_3p_1$的叉积为负， $p_3p_4$与$p_3p_2$叉积也为负，说明$p_1$和$p_2$在$p_3p_4$同侧，两线段不相交
+					
+					![img](img/9-2.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 线段相交判断
+					------
+					- 图(a)，$p_3p_1$和$p_3p_2$的叉积为0，𝑝3在$p_1p_2$上，两线段相交
+					- 图(b)， $p_3p_1$和$p_3p_2$的叉积为0， $p_3$在$p_1p_2$外，两线段不相交
+					- 所以当叉积出现0时还需判断点是否在线段内，只要比较$p_3.x$是否在$p_1.x$和$p_2.x$之间，$p_3.y$是否在$p_1.y$和$p_2.y$之间，同时满足，则$p_3$在$p_1p_2$上
+					
+					![img](img/9-3.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1410 -- Intersection (poj.org)](http://poj.org/problem?id=1410)
+					------
+					- You are to write a program that has to decide whether a given line segment intersects a given rectangle.
+					- An example:
+						- line: start point: (4,9)
+						- end point: (11,2)
+						- rectangle: left-top: (1,5)
+						- right-bottom: (7,1)
+					- The line is said to intersect the rectangle if the line and the rectangle have at least one point in common. The rectangle consists of four straight lines and the area in between. Although all input values are integer numbers, valid intersection points do not have to lay on the integer grid.
+					
+					<span style="float: right; position: relative;top: -430px; right: 150px;">
+
+					![img](img/1410.jpg)
+					</span>
+					</textarea>
+				</section>			
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-20|21-38|50-56" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						const int N = 750;
+						struct Point
+						{
+							int x, y;
+							Point(){};
+							Point(int x, int y) : x(x), y(y) {}
+						};
+						int cross(Point p1, Point p2, Point p0)
+						{
+							return (p1.x - p0.x) * (p2.y - p0.y)  
+								- (p2.x - p0.x) * (p1.y - p0.y);
+						}
+						bool onSegment(Point p1, Point p2, Point p0)
+						{
+							return (p0.x >= min(p1.x, p2.x)) && (p0.x <= max(p1.x, p2.x)) 
+								&& (p0.y >= min(p1.y, p2.y)) && (p0.y <= max(p1.y, p2.y));
+						}
+						bool interesect(Point p1, Point p2, Point p3, Point p4)
+						{
+							int d1 = cross(p2, p3, p1);
+							int d2 = cross(p2, p4, p1);
+							int d3 = cross(p1, p4, p3);
+							int d4 = cross(p2, p4, p3);
+							if (d1 * d2 < 0 && d3 * d4 < 0)
+								return true;
+							else if (!d1 && onSegment(p1, p2, p3))
+								return true;
+							else if (!d2 && onSegment(p1, p2, p4))
+								return true;
+							else if (!d3 && onSegment(p3, p4, p1))
+								return true;
+							else if (!d4 && onSegment(p3, p4, p2))
+								return true;
+							return false;
+						}
+						int main()
+						{
+							int n;
+							scanf("%d", &n);
+							while (n--)
+							{
+								Point p1, p2, p3, p4;
+								scanf("%d%d%d%d%d%d%d%d", 
+									&p1.x, &p1.y, &p2.x, &p2.y, &p3.x, &p3.y, &p4.x, &p4.y);
+								Point p5 = Point(p4.x, p3.y);
+								Point p6 = Point(p3.x, p4.y);
+								//判断线段在矩阵内只需判断一点在矩阵内
+								bool ans = false;
+								ans = ans || interesect(p1, p2, p3, p5);
+								ans = ans || interesect(p1, p2, p6, p4);
+								ans = ans || interesect(p1, p2, p3, p6);
+								ans = ans || interesect(p1, p2, p5, p4);
+								ans = ans || onSegment(p3, p4, p1);
+								printf("%c\n", ans ? 'T' : 'F');
+							}
+							return 0;
+						}							
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 9.2 多边形
+					------
+					<div class="small">
+
+					1. 叉积的另一种解释就是平行四边形的<span class="blue">有向面积</span>
+					2. 有向三角形面积就可以通过叉积计算出来
+					$$Area(p_0p_1p_2)=\frac{\overrightarrow{p_0p_1}\times \overrightarrow{p_0p_2}}{2}$$
+					3. 以$p_1$为扇面中心，连接$p_1p_i$就得到$n-2$个三角形
+						- 由于凸性，保证这些三角形全在多边形内
+						- 由于叉积计算出来的面积是有正负的，所以面积也适用于凹多边形的情况
+					$$A=\sum\limits_{i = 1}^{n-2}{A_i}$$
+					4. 将扇面中心移到(0,0)点，就可以得到更一般的面积公式
+					$$A=\sum(x_iy_{i+1}+x_{i+1}y_i)$$
+
+					<span style="float: right;zoom: 50%; position: relative; right: 100px;">
+
+					![img](img/9-4.png)
+					</span>
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1269 -- Intersecting Lines (poj.org)](http://poj.org/problem?id=1269)
+					------
+					- 给出4个点，判断通过前两点的直线和通过后两点直线的相互关系，相交、平行还是共线，相交的话求交点坐标
+					- 交点坐标用叉积(面积)属性来求，如图，推导出交点$P$的公式为
+					$$\frac{P_3P}{PP_4}=\frac{A_1}{A_2}=\frac{P_3-P}{P_4-P}\Rightarrow P=\frac{P_3\times A_2-P_4\times A_1}{A_2-A_1}$$
+					其中：$A_1=Area(P_1P_2P_3),A_2=Area(P_1P_2P_4)$
+						- $A_1$和$A_2$都为0说明共线
+						- $A_1$等于$A_2$说明平行
+						- 否则可以求出交点$P$
+
+					<span style="float: right;zoom: 40%; position: relative;bottom: 400px; right: 200px;">
+
+					![img](img/9-5.png)
+					</span>
+				</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="13-27" ><script type="text/template">
+						#include <cstdio>
+						using namespace std;
+						struct Point
+						{
+							int x, y;
+							Point(){};
+							Point(int x, int y) : x(x), y(y) {}
+						};
+						int cross(Point p1, Point p2, Point p0)
+						{
+						return (p1.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p1.y - p0.y);
+						}
+						void intersection(Point p1, Point p2, Point p3, Point p4)
+						{
+							int s1 = cross(p1, p2, p3);
+							int s2 = cross(p1, p2, p4);
+							if (s1 == 0 && s2 == 0)
+								printf("LINE\n"); //两线重合
+							else if (s1 == s2)
+								printf("NONE\n"); //两线平行不重合
+							else
+							{
+								double x = (p3.x * s2 - p4.x * s1) * 1.0 / (s2 - s1);
+								double y = (p3.y * s2 - p4.y * s1) * 1.0 / (s2 - s1);
+								printf("POINT %.2lf %.2lf\n", x, y); //两线相交,交点为(x,y)
+							}
+						}
+						int main()
+						{
+							int n;
+							Point p1, p2, p3, p4;
+							scanf("%d", &n);
+							printf("INTERSECTING LINES OUTPUT\n");
+							while (n--)
+							{
+								scanf("%d%d%d%d", &p1.x, &p1.y, &p2.x, &p2.y);
+								scanf("%d%d%d%d", &p3.x, &p3.y, &p4.x, &p4.y);
+								intersection(p1, p2, p3, p4);
+							}
+							printf("END OF OUTPUT\n");
+							return 0;
+						}													
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 凸包
+					------
+					- <span class="blue">凸包</span>(Convex hull) 的问题，即找一个包含所有点的最小凸多边形，所有的点要么在多边形的边上，要么在其内部
+					- 例：多边形$p_2p_7p_8p_5p_9$为点集$\\{ p_1,p_2,\ldots ,p_9\\}$的凸包
+					- <span class="blue">葛立恒扫描法</span>(Graham's scan)求凸包
+						- 在所有点中选择左下点作为$p_0$，将剩余点按照<span class="blue">极角</span>大小排序，之后将$p_0,p_1$放入栈中，
+						计算次栈顶点、栈顶点和下一个顺序点的叉积值，如果为正，栈顶保留，如果为负，则栈顶点出栈；
+						下一个顺序点入栈，继续以上操作，最后栈中的点就是所求凸包的顶点
+
+					![img](img/9-6.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[3348 -- Cows (poj.org)](http://poj.org/problem?id=3348)
+					------
+					- 给出$n$棵树的坐标$p(x,y)$，用这些树围成牧场，每头牛至少需要50平方米活动区间，问牧场最多能放下多少头牛
+				</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="22-39|47-49,51" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						const int N = 1001;
+						struct Point
+						{
+							int x, y;
+							Point() {}
+							Point(int x, int y) : x(x), y(y) {}
+						} v[N], p[N];
+						
+						int dist(Point p1, Point p2)
+						{
+							return (p1.x - p2.x) * (p1.x - p2.x) 
+							+ (p1.y - p2.y) * (p1.y - p2.y);
+						}
+						int cross(Point p1, Point p2, Point p0)
+						{
+							return (p1.x - p0.x) * (p2.y - p0.y) 
+							- (p2.x - p0.x) * (p1.y - p0.y);
+						}
+						int cmp(Point p1, Point p2)
+						{
+							return cross(p[0], p1, p2) > 0 || (!cross(p[0], p1, p2) 
+							&& dist(p[0], p1) < dist(p[0], p2));
+						}
+						int convex(int n)
+						{
+							v[0] = p[0];
+							v[1] = p[1];
+							int top = 1; //类似堆栈存储凸包顶点，top为栈顶，也是栈内元素个数
+							for (int i = 2; i < n; i++)
+							{
+								while (cross(v[top - 1], v[top], p[i]) < 0)
+									top--;
+								v[++top] = p[i];
+							}
+							return top;
+						}
+						int main()
+						{
+							int n;
+							scanf("%d", &n);
+							for (int i = 0; i < n; i++)
+							{
+								scanf("%d%d", &p[i].x, &p[i].y);
+								// p[0]为y值最小(最小y值相等则选x值最小)的点
+								if (p[0].x > p[i].x || (p[0].x == p[i].x && p[0].y > p[i].y))
+									swap(p[0], p[i]);
+							}
+							sort(p + 1, p + n, cmp); //按照极角递增排序
+							int m = convex(n);
+							int ans = 0;
+							for (int i = 0; i < m; i++)
+								ans += cross(v[i], v[i + 1], p[0]);
+							printf("%d\n", ans / 100);
+							return 0;
+						}																			
+					</script></code></pre>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

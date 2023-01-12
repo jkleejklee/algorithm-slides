@@ -1,0 +1,894 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.small {
+			zoom: 70%;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #8 图算法
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 8.1 最小生成树
+					------
+					- <span class="blue">最小生成树</span>(MST, Minimum spanning tree)通常是在无向图问题中，
+					给出端点和两点之间边的权值，然后进行求解
+					- 图的存储给出邻接矩阵，转化为用边的存储结构来表示
+					- 常用的两种算法都是基于贪心策略
+						-  <span class="blue">Prim算法</span>，利用最小堆来实现，运行时间取决于最小堆的实现方式
+						-  <span class="blue">Kruskal算法</span>，需要将边按权值排序依次进行比较，当边较多时，运行时间会增加
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1258 -- Agri-Net (poj.org)](http://poj.org/problem?id=1258)
+					------
+					- 有$n$个农场，给出相互之间的距离，用光纤将所有农场连接在一起，问如何连接使光纤总长度最小，求出这个最小值。
+					即在$n$个点，$\frac {n(n-1)}{2}$条边组成的连通加权无向图中求最小生成树，本题使用<span class="blue">Prim算法</span> 
+					- Prim(普里姆)算法使用的是贪心策略，从单一顶点开始，依次加入其他顶点，保证加入的边长度最小，直到包含所有顶点结束
+						- 定义二维数组D[i,j]为i到j的距离，在图论中，这种图结构的表示方法叫做<span class="blue">邻接矩阵</span>(adjacency matrix)
+						- 用结构体edge{v,to}来表示图中的边(v为边权，to为边的终点）
+						- 定义vis[i]记录i点是否已经加入生成树中
+						- 将边放入最小堆Q来实现存取
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	计算过程
+					------
+					![img](img/8-1.png)
+					1. 将顶点1加入生成树，设vis[1]=1，边{4,2},{9,3},{21,4}插入最小堆 <!-- .element: class="fragment" data-fragment-index="1" -->
+					2. 取出边{4,2}，因为vis[2]=0，将2加入生成树，设vis[2]=1，累计距离等于4，边{4,1},{8,3},{17,4}插入最小堆 <!-- .element: class="fragment" data-fragment-index="2" -->
+					3. 取出边{4,1}，因为vis[1]=1，继续；再取{8,3}，因为vis[3]=0，将3加入生成树，设vis[3]=1，累计距离等于12，相应边插入最小堆 <!-- .element: class="fragment" data-fragment-index="3" -->
+					4. 依次取出边{8,2},{9,1},{16,4}，因为vis[4]=0，将4加入生成树，设vis[4]=1，累计距离等于28，相应边插入最小堆 <!-- .element: class="fragment" data-fragment-index="4" -->
+					5. 继续从队列中取边，直到队列为空 <!-- .element: class="fragment" data-fragment-index="5" -->
+					</textarea>
+				</section>				
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-18|23-40" ><script type="text/template">
+						#include <cstdio>
+						#include <queue>
+						using namespace std;
+						const int N = 105;
+						struct edge
+						{
+							int v;  //边的起点到终点的距离
+							int to; //边的终点
+							edge(int a, int b) : v(a), to(b) {}
+							bool operator<(const edge a) const
+							{
+								return v > a.v;
+							}
+						};
+						priority_queue<edge> Q; 	//优先队列实现最小堆
+						int n;                  	//节点数量
+						int a[N][N];            	//保存起点到终点的距离
+						bool vis[N];            	//记录该点是否已经放入生成树
+						//普里姆算法求最小生成树
+						int Prim()
+						{
+							int ans = 0;   			//生成树边总长度
+							vis[1] = true; 			//将点1加入生成树中
+							//将与点1相连的其他点插入最小堆
+							for (int i = 2; i <= n; i++)
+								Q.push(edge(a[1][i], i));
+							while (!Q.empty())
+							{
+								edge e = Q.top(); 	//从堆中取出边e
+								Q.pop();
+								//如果e的终点未在生成树中，则将其加入到生成树中，并将边插入堆
+								if (!vis[e.to])
+								{
+									ans += e.v;       	//累计边的长度
+									vis[e.to] = true; 	//标记e的终点已经放入生成树
+									//将与e的终点相连的其他点插入最小堆
+									for (int i = 1; i <= n; i++)
+										if (i != e.to)
+											Q.push(edge(a[e.to][i], i));
+								}
+							}
+							return ans;
+						}
+						int main()
+						{
+							while (~scanf("%d", &n))
+							{
+								fill(vis, vis + N, 0);
+								for (int i = 1; i <= n; i++)
+									for (int j = 1; j <= n; j++)
+										scanf("%d", &a[i][j]);
+								printf("%d\n", Prim());
+							}
+							return 0;
+						}							
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2485 -- Highways (poj.org)](http://poj.org/problem?id=2485)
+					------
+					- 给出$n$个城镇相互之间的距离，用高速公路连接所有城镇，求需要修建总长度最短的高速公路的方案中最长的一段公路的长度，本题使用<span class="blue">Kruskal算法</span> 
+					- Kruskal(克鲁斯克尔)算法使用的是贪心策略，将所有的边按长度递增排序，每次取一条边，如果没有形成回路，
+					就将这条边放入生成树中，直到检查完所有的边
+					- 用结构体edge{u,v,w}来表示图中的边(u，v为边的两个端点，w为边的长度）
+					- 是否存在回路的判断，可以使用[并查集](6.html#/1)来实现
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	计算过程
+					------
+					![img](img/8-1.png)
+					1. 取{1,2,4}，没有环路，将{1,2,4}放入生成树 <!-- .element: class="fragment" data-fragment-index="1" -->
+					2. 取{2,3,8}，没有环路，将{2,3,8}放入生成树 <!-- .element: class="fragment" data-fragment-index="2" -->
+					3. 取{1,3,9}，有环路，继续操作 <!-- .element: class="fragment" data-fragment-index="3" -->
+					4. 取{3,4,16}，没有环路，将{3,4,16}放入生成树 <!-- .element: class="fragment" data-fragment-index="4" -->
+					5. 取{2,4,17},{1,4,21}，有环路，继续操作 <!-- .element: class="fragment" data-fragment-index="5" -->
+					6. 所有边取完，过程结束，最后取的边{3,4,16}的长度就是本题的解 <!-- .element: class="fragment" data-fragment-index="6" -->
+					</textarea>
+				</section>				
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="7-17|31-44" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						const int N = 505;
+						const int M = N * (N - 1) / 2;
+						int p[N];
+						struct Edge
+						{
+							int u, v; 		//边的两个端点
+							int w;    		//边的长度
+							Edge() {}
+							Edge(int a, int b, int c) : u(a), v(b), w(c) {}
+							bool operator<(const Edge &a) const
+							{
+								return w < a.w;
+							}
+						} e[M];
+						int Find(int x)
+						{
+							return (p[x] < 0) ? x : Find(p[x]);
+						}
+						void Union(int x, int y)
+						{
+							x = Find(x);
+							y = Find(y);
+							if (x > y)
+								p[x] = y;
+							if (x < y)
+								p[y] = x;
+						}
+						int Kruskal(int m)
+						{
+							int ans = 0;
+							sort(e + 1, e + m + 1); //将边的长度递增排序
+							for (int i = 1; i <= m; i++)
+							{
+								if (Find(e[i].u) != Find(e[i].v))
+								{
+									Union(Find(e[i].u), Find(e[i].v));
+									ans = e[i].w;
+								}
+							}
+							return ans;
+						}
+						int main()
+						{
+							int t;
+							scanf("%d", &t);
+							while (t--)
+							{
+								int n; 		//节点数量
+								scanf("%d", &n);
+								int m = 0; 	//边的数量
+								for (int i = 1; i <= n; i++)
+									for (int j = 1; j <= n; j++)
+									{
+										int a;
+										scanf("%d", &a);
+										if (i < j)
+											e[++m] = Edge(i, j, a);
+									}
+								fill(p, p + N, -1);
+								printf("%d\n", Kruskal(m));
+							}
+							return 0;
+						}													
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 8.2 最短路
+					------
+					- 在图中寻找两个节点之间的最短路径，称为<span class="blue">最短路径问题</span>(Shortest path problem),求最短路有以下几种常见的算法，分别为<span class="blue">弗洛伊德(Floyd-Warshall)算法</span> 、
+					<span class="blue">贝尔曼-福特(Bellman–Ford)算法</span> 、<span class="blue">最短路径快速算法(SPFA)</span>和<span class="blue">迪杰斯特拉(Dijkstra)算法</span> 
+					- 几种算法的比较如下
+					| **算法**     | **代码中采用的数据结构** | 时间复杂度($V$:点数;$E$:边数) |
+					| ------------ | ------------------------ | ------------------------- |
+					| Floyd        | 邻接矩阵                 | $O(V^3)$                     |
+					| Bellman-Ford | 邻接表                   | $O(VE)$                     |
+					| SPFA         | 链式前向星               | 平均$O(2E)$，最差$O(VE)$      |
+					| Dijkstra     | 邻接矩阵、链式前向星     | $O(V^2)$，可进一步优化       |
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 分类总结
+					------
+					1. 按照是否确定起点
+						- 单源最短路：Bellman-Ford、SPFA、Dijkstra
+						- 全局最短路：Floyd
+					2. 路径是否有方向：无向图、有向图
+					3. 边的权值是否有负值
+						- 有负权：Floyd、Bellman-Ford、SPFA
+						- 无负权：Dijkstra
+					4. 边数量多少
+						- 稀疏图：邻接表、链式前向星
+						- 稠密图：邻接矩阵
+					5. 点与边的规模
+						- 较小：Floyd
+						- 中等：Bellman-Ford
+						- 较大：SPFA、Dijkstra
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### `Floyd`算法
+					------
+					- Floyd(Floyd-Warshall,弗洛伊德)算法采用动态规划思想，可以计算图中任意两点间的最短路径，可以处理有向图，
+					允许出现负值的边，但是不能出现负值的回路
+					- 设$D[i,j,k]$是从$i$到$j$的最短距离，而路径经过的点为$1\ldots k$
+					$$D[i,j,k]=\begin{cases}D[i,k,k-1]+D[k,j,k-1],use \ k \\\ D[i,j,k-1],not \  use \ k \end{cases} \\\ =min(D[i,k,k-1]+D[k,j,k-1],D[i,j,k-1])$$
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1125 -- Stockbroker Grapevine (poj.org)](http://poj.org/problem?id=1125)
+					------
+					- $n$个股票经纪人，某些人之间有联系，构成一个网络，网络中相邻的节点传播谣言，用时间来衡量传播速度
+					- 计算根据已知信息选择其中一个经纪人作为起点，使谣言传给每个人，到最后一个人的时间最短
+					- 如图所示，选择3，最后收到谣言的人为4，时间是10
+
+					![img](img/8-2.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+						
+					![img](img/8-3.png)
+					- 上图显示了Floyd算法计算过程中的数组情况
+						- 其中$k=1$时是数组的初始情况，$k=3,4$时数组内容没有发生变化
+					- 最后在结果的邻接矩阵中，依次查找每个$i$到其他点$j$的距离的最大值，再从这些最大值中找到最小值，可以看到，最小的最大值为10，此时$i$为3
+					
+				</textarea>
+				</section>
+				
+				<section data-markdown>
+					<textarea data-template>
+					###	最短路径快速算法
+					------
+					- <span class="blue">贝尔曼-福特(Bellman–Ford)</span>算法：通过不停修改路径长度值$D$来达到求最短路径的目标，这种操作被称为<span class="blue">松弛操作</span>。
+					从$a$点到$b$点，不会超过$n-1$条边，第$i$次松弛操作，保证对距离源点$i$距离值最小，进行$n-1$次操作，就更新了到所有点的最短距离。该算法允许有负权边，并可以通过第$n$次操作检查$D$值变化情况来判断是否存在负权回路。
+					- <span class="blue">最短路径快速算法</span>(SPFA, Shortest Path Faster Algorithm)是对Bellman-Ford算法的优化，因为Bellman-Ford算法的松弛操作执行在所有的节点上，有很多节点并没有必要进行更新，SPFA算法通过队列维护备选节点，当节点被松弛后放入队列，直到没有终点被松弛。SPFA也适用于带有负边权的图，然而在最坏情况的时间复杂度与Bellman-Ford算法相同。
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1511 -- Invitation Cards (poj.org)](http://poj.org/problem?id=1511)
+					------
+					- $p$个公交站点，$q$条公交线路，从$u$站点到$v$站点，价格为$w$。$p$个志愿者从1号站点出发到每个站点，再返回到1号站点，求花费的总值最少是多少
+					- 处理一个点之后，将该点连接的路径放入队列，存储图信息的数据结构应该方便这个操作，可以使用<span class="blue">邻接表</span>(Adjacency list)来实现，
+					这里采用数组来模拟链表实现的邻接表(被称为[链式前向星](https://malash.me/200910/linked-forward-star/)),如图
+					
+					<div class="left" style="float: left;width: 40%; zoom: 70%;">
+
+					| p    | q    |      |
+					| ---- | ---- | ---- |
+					| 4    | 6    |      |
+					| **u**    | **v**    | **w**   |
+					| 1    | 2    | 10   |
+					| 2    | 1    | 60   |
+					| 1    | 3    | 20   |
+					| 3    | 4    | 10   |
+					| 2    | 4    | 5    |
+					| 4    | 1    | 50   |
+					</div>
+					<div class="right" style="float: right; width: 60%;zoom: 50%;">
+
+					![img](img/8-4.png)
+					</div>
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="7-16|17-33|34-41|42-53" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						#include <queue>
+						using namespace std;
+						const int N = 1000005;
+						const int INF = 0x3f3f3f3f;
+						struct Edge
+						{
+							int u, v, w;
+							int next;
+							Edge() {}
+							Edge(int a, int b, int c) : u(a), v(b), w(c), next(-1) {}
+						} e[N];
+						int head[N];
+						int p; // 指向head数组末尾
+						long long d[N]; //到达v点的路径长度
+						void init()
+						{
+							fill(head, head + N, -1);
+							p = 0;
+						}
+						//向链接前向星数据结构中添加边
+						void addEdge(int u, int v, int w)
+						{
+							e[p] = Edge(u, v, w);
+							e[p].next = head[u];
+							head[u] = p++;
+						}
+						//松弛操作
+						bool relax(int u, int v, int w)
+						{
+							return (d[v] > d[u] + w) ? (d[v] = d[u] + w, true) : false;
+						}
+						void SPFA(int n, int s)
+						{
+							queue<int> Q;	//松弛的节点放入队列
+							bool in[N] = {0}; //记录节点是否在队列中
+							fill(d, d + n + 1, INF);
+							d[s] = 0;
+							in[s] = true;
+							Q.push(s);
+							while (!Q.empty())
+							{
+								int u = Q.front();
+								Q.pop();
+								in[u] = false;
+								for (int i = head[u]; i + 1; i = e[i].next)
+									if (relax(u, e[i].v, e[i].w) && !in[e[i].v])
+									{
+										Q.push(e[i].v);
+										in[e[i].v] = true;
+									}
+							}
+						}
+						int main()
+						{
+							int t;
+							scanf("%d", &t);
+							while (t--)
+							{
+								int p, q;
+								scanf("%d%d", &p, &q);
+								init();
+								for (int i = 0; i < q; i++)
+								{
+									int u, v, w;
+									scanf("%d%d%d", &u, &v, &w);
+									addEdge(u, v, w);
+								}
+								SPFA(p, 1); //正向求值
+								long long ans = 0;
+								for (int i = 1; i <= p; i++)
+									ans += d[i];
+								init();
+								for (int i = 0; i < q; i++)
+									addEdge(e[i].v, e[i].u, e[i].w);
+								SPFA(p, 1); //反向求值
+								for (int i = 1; i <= p; i++)
+									ans += d[i];
+								printf("%lld\n", ans);
+							}
+							return 0;
+						}																				
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1797 -- Heavy Transportation (poj.org)](http://poj.org/problem?id=1797)
+					------
+					- $m$条街道有$n$个交点，交点编号从$1$到$n$，每条街道有重量限制$w$。从1号城市向$n$号城市运送起重机，
+					选择一条路径，使得路径上的每条街道允许的重量$w$的最大值最大
+					- 如图，选择1-2-3，由于1-2允许的最大载重量为3，所以整条路线上允许的最大值是3；选择1-3，允许的最大值为4。最终结果为4
+
+					![img](img/8-5.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	`Dijkstra`算法
+					------
+					- <span class="blue">迪杰斯特拉(Dijkstra)</span>算法的特点是不断对两点间的最短距离$D$进行松弛操作
+					- S为源点，初始时令$D[S]=0$,其他$D$值设为无穷大，$T$为终点，$D[T]$为所求的最短路径，如果$D[T]$为无穷大，则不存在$S$到$T$的最短路径
+					- 具体操作过程是每次选择未访问的$D$值最小的一点$u$，将$u$标记为访问，再将与$u$连接的所有点$v$的$D[v]$的值更新为$D[v]$和$D[u]+a[u,v]$中的较小值
+					- Dijkstra算法比较之前的算法效率要高，但是不支持负权的边
+					- 分阶段松弛操作的本质是<span class="blue">动态规划</span>
+					- Dijkstra算法的松弛操作针对的是累计从源点到目标点的最短距离值$D$，将$D$值的含义改为从源点到目标点的最大允许载重量，
+					每次选择未访问的$D$值最大的一点$u$，更新$D[v]$为$D[v]$和$min(D[u],a[u,v])$的最大值，就是本题的解法
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					- 求最短路径的话，需要修改代码中标记的两个地方：
+						1. 每次取$D$值最小的点$u$，即`t≥D[i]`
+						2. 松弛操作`D[v]=min(D[v],min(D[u],a[u][v]))`
+
+					<pre><code data-trim data-noescape data-line-numbers="7-15|16-28" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						#include <algorithm>
+						using namespace std;
+						const int N = 1005;
+						int n;
+						int D[N];    	//源点s到目标点j载重最大值
+						int a[N][N]; 	//保存两点间允许的重量
+						void Dijkstra(int s)
+						{
+							bool vis[N];
+							memset(vis, 0, sizeof(vis));
+							for (int i = 1; i <= n; i++)
+								D[i] = a[s][i];
+							vis[s] = true;
+							for (int i = 1; i < n; i++)
+							{
+								int t = 0;
+								int u;
+								for (int j = 1; j <= n; j++)
+									if (t <= D[j] && !vis[j]) //1
+									    t = D[u = j];
+								vis[u] = true;
+								for (int v = 1; v <= n; v++)
+									if (!vis[v])
+									    D[v] = max(D[v], min(D[u], a[u][v])); //2
+							}
+						}
+						int main()
+						{
+							int t;
+							scanf("%d", &t);
+							for (int i = 1; i <= t; i++)
+							{
+								int m;
+								scanf("%d%d", &n, &m);
+								memset(a, 0, sizeof(a));
+								while (m--)
+								{
+									int u, v, w;
+									scanf("%d%d%d", &u, &v, &w);
+									a[u][v] = a[v][u] = w;
+								}
+								Dijkstra(1);
+								printf("Scenario #%d:\n%d\n\n", i, D[n]);
+							}
+							return 0;
+						}																										
+					</script></code></pre>
+				</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 8.3 图的连通性
+					------
+					- 如果图中任意两点都是连通的，那么图被称作<span class="blue">连通图</span> 
+					- <span class="blue">强连通分量</span>(Strongly connected component)，是图的一个子图，里面的所有点构成一个强连通图，
+					即每一个顶点都可以通过图中的边到达图中其他的顶点，且这个连通子图是极大的，也就是子图外不再包含符合该条件的点
+					- 在图的规模较小时，可以模仿Floyd算法对所有边进行枚举，但是深入理解<span class="blue">Tarjan算法</span>，了解low和dfn的含义，能够更有效的解决图的连通性问题
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	`Tarjan`算法
+					------
+					-  图中每个节点的两个数字分别是执行了Tarjan算法后的dfn值和low值，该图最终被划分出了4个强连通分量
+
+					![gif](img/Tarjan.gif)
+					<div class="small">
+
+					1. 从图中一点$u$出发，对图进行深度优先搜索，用dfn[u]记录节点u在深度优先搜索中访问的次序编号，
+					low[u]记录$u$或$u$的子树能够追溯到的最早的栈中节点的次序编号。将$u$放入堆栈，搜索$u$的相连点$v$，如果$v$未被访问，
+					则递归访问$v$；如果$v$已经在堆栈中，则检查dfn[v]是否小于low[u]，如果是，就更新low[u]的值为dfn[v]
+					2. 用U[i]表示u属于哪个强连通分量，按照深度优先搜索规则，同一强连通分量的节点会依次入栈，
+					当发现dfn[u]等于low[u]，说明搜索回到了强连通分量的最初搜索点，此时依次将这些low值相同的点出栈，
+					将它们的U值设置成同一个编号
+					3. 对图中所有点重复1，2操作，这样每个的强连通分量就缩成了对应的U[i]点
+					</div>
+					</textarea>
+				</section>				
+				<section data-markdown>
+					<textarea data-template>
+					###	[2186 -- Popular Cows (poj.org)](http://poj.org/problem?id=2186)
+					------
+					- 有$n$头牛，$m$对关系，关系$(a,b)$表示$a$认为$b$是受欢迎的，这种关系是可传递的，即$(a,b)(b,c)$可以推出$(a,c)$，
+					现在找出被所有其他牛都认为受欢迎的牛的数量
+					- 将$a,b$看作图中的节点，关系$(a,b)$看成点$a$到点$b$的一条有向边，题目所求的相当于找到这样点，所有的点都可以找到一条路径通向该点
+						1. 把图进行简化，确定图中的强连通分量，我们发现，问题中强连通分量中的点对外具有相同的性质，
+						可以将它们当成一个点来对待，如果其中一点符合题解，则强连通分量中所有点都符合题解
+						2. 通过Tarjan算法，找到的强连通分量都缩成一点U[i]，接下来，在由U点组成的有向无环图中检查各个节点的出度。
+						由于消除了环路，所以一定存在出度为0的点。如果存在唯一的出度为0的点，则这个点就是题目要求的点，该点所在的强连通分量里点的数量就是题解
+				</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-22|23-31|32-59|60-66" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						const int N = 10001;
+						const int M = 50001;
+						struct Edge
+						{
+							int v, next;
+							Edge() {}
+							Edge(int a, int b) : v(a), next(b) {}
+						} e[M];
+						int head[N], p;
+						void init()
+						{
+							fill(head, head + N, -1);
+							p = 0;
+						}
+						void addEdge(int u, int v)
+						{
+							e[p] = Edge(v, head[u]);
+							head[u] = p++;
+						}
+						int dfn[N];     	// 节点u搜索的次序编号
+						int low[N];     	// u或u的子树能够追溯到的最早的栈中节点的次序编号
+						int U[N];       	//节点u所属的[强连通分量]编号
+						int Dindex = 0; 	//编号索引
+						int Ucnt = 0;   	//[强连通分量]数量
+						int Stack[N];
+						int top = 0;
+						bool in[N]; 		//是否在堆栈中
+						int n, m;
+						void tarjan(int u)
+						{
+							int v;
+							dfn[u] = low[u] = ++Dindex;
+							in[u] = true;
+							Stack[++top] = u;
+							for (int i = head[u]; i + 1; i = e[i].next)
+							{
+								v = e[i].v;
+								if (!dfn[v])
+								{
+									tarjan(v);
+									low[u] = min(low[u], low[v]);
+								}
+								else if (in[v])
+									low[u] = min(low[u], dfn[v]);
+							}
+							if (dfn[u] == low[u])
+							{
+								Ucnt++;
+								do
+								{
+									v = Stack[top--];
+									in[v] = false;
+									U[v] = Ucnt;
+								} while (v != u);
+							}
+						}
+						void solve()
+						{
+							fill(dfn, dfn + N, 0);
+							for (int i = 1; i <= n; i++)
+								if (!dfn[i])
+									tarjan(i);
+						}
+						int main()
+						{
+							int i, a[M], b[M], ans;
+							int cnt[N];   	//[强连通分量]中节点个数
+							int D[N];     		//每个[强连通分量]的出度
+							int Dcnt = 0; 	//出度为0的[强连通分量]个数
+							fill(D, D + N, 0);
+							fill(cnt, cnt + N, 0);
+							scanf("%d%d", &n, &m);
+							init();
+							for (i = 1; i <= m; i++)
+							{
+								scanf("%d%d", &a[i], &b[i]);
+								addEdge(a[i], b[i]);
+							}
+							solve();
+							for (i = 1; i <= m; i++)
+							{
+								if (U[a[i]] != U[b[i]])
+									D[U[a[i]]]++;
+							}
+							for (i = 1; i <= n; i++)
+								cnt[U[i]]++;
+							for (i = 1; i <= Ucnt; i++)
+								if (!D[i])
+								{
+									Dcnt++;
+									ans = cnt[i];
+								}
+							printf("%d\n", Dcnt == 1 ? ans : 0);
+							return 0;
+						}													
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1144 -- Network (poj.org)](http://poj.org/problem?id=1144)
+					------
+					- 电话网络有$n$个连接点，编号从$1$到$n$，每个连接点有一个交换机，两个交换机之间的路线双向的。
+					如果交换机停机会造成某些点不能连通，则称这个交换机为关键节点，求所有关键节点的数量
+					- (a)图关键节点为5，(b)图关键节点为2、5<br/><br/><br/><br/><br/>
+					- 在无向的连通图中，删除一点后使图不再连通，这点就被称为<span class="blue">割点</span>(vertex separator/vertex cut)
+					- 与割点类似，如果删除一条边使图不再连通，这条边被称为<span class="blue">桥</span>(Bridge)
+					- 求割点的数量，采用<span class="blue">Tarjan的找桥算法</span>来实现
+					<span style="float: right;position: relative;bottom: 350px;right: 70px; ">
+					
+						![img](img/8-6.png)
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	`Tarjan`找桥算法
+					------
+					-  与有向图求强连通分量的算法类似，对连通图采用深度优先搜索，通过标记dfn和low的值来进行判断，不同之处有以下几点：
+						1. 不需要使用堆栈对节点进行分类
+						2. 无需对每个节点都进行一次深度优先搜索，选中一点作为起始节点即可
+						3. 因为无向图的边是双向的，在找$u$点的后序节点时，需要避免访问$u$的父亲节点
+						4. 对起始节点需要特殊判断，如果遍历过程中它的子节点超过1个，则它也是一个割点，如上图右图，1位置为起始节点的话不是割点，而2位置为起始节点，它的子节点有3个，所以它是割点
+					- 代码中low[v]≥dfn[u]时说明v点能够追溯到的最早节点编号是$u$点或者$u$点之后，所以$u$为割点；如果改成low[v]>dfn[u]，说明$v$点能够追溯到的最早节点编号在$u$点之后，意味着去掉边$(u,v)$后图不再连通，$(u,v)$就是一个桥
+					
+					</textarea>
+				</section>				
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-20|21-41|42-49" ><script type="text/template">
+						#include <cstdio>
+						#include <vector>
+						#include <algorithm>
+						using namespace std;
+						const int N = 105;
+						vector<int> G[N];
+						int low[N];
+						int dfn[N];
+						bool iscut[N]; //记录是否为割点
+						int Dindex;
+						int n;
+						void init()
+						{
+							for (int i = 0; i <= n; i++)
+								G[i].clear();
+							fill(dfn, dfn + N, 0);
+							fill(low, low + N, 0);
+							fill(iscut, iscut + N, false);
+							Dindex = 0;
+						}
+						void tarjan(int u, int father)
+						{
+							int child = 0; //记录1号节点子节点个数
+							low[u] = dfn[u] = ++Dindex;
+							for (unsigned int i = 0; i < G[u].size(); i++)
+							{
+								int v = G[u][i];
+								if (!dfn[v])
+								{
+									child++;
+									tarjan(v, u);
+									low[u] = min(low[u], low[v]);
+									if (low[v] >= dfn[u] && u != 1)
+										iscut[u] = true;
+								}
+								else if (dfn[v] < dfn[u] && v != father)
+									low[u] = min(low[u], dfn[v]);
+							}
+							if (u == 1 && child > 1)
+								iscut[1] = true;
+						}
+						void solve()
+						{
+							int ans = 0;
+							tarjan(1, 0);
+							for (int i = 1; i <= n; i++)
+								ans += iscut[i];
+							printf("%d\n", ans);
+						}
+						int main()
+						{
+							int a, b;
+							char c;
+							while (scanf("%d", &n) && n)
+							{
+								init();
+								while (scanf("%d", &a) && a)
+								{
+									do
+									{
+										scanf("%d%c", &b, &c);
+										G[a].push_back(b);
+										G[b].push_back(a);
+									} while (c != '\n');
+								}
+								solve();
+							}
+							return 0;
+						}																			
+					</script></code></pre>
+				</section>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+				## 8.4 网络流问题
+				------
+				- 在图论中，<span class="blue">网络流</span>(Network flow)是指在一个每条边都有容量（Capacity）的有向图分配流，使一条边的流量不会超过它的容量
+				- 通常在运筹学中，有向图称为网络。顶点称为<span class="blue">节点</span>（Node）而边称为<span class="blue">弧</span>（Arc）
+				- 一道流必须符合一个结点的进出的流量相同的限制，
+				除非这是：
+					- <span class="blue">源点</span>（Source）──有较多向外的流
+					- 或是<span class="blue">汇点</span>（Sink）──有较多向内的流
+				- 一个网络可以用来模拟道路系统的交通量、管中的液体、电路中的电流或类似一些东西在一个结点的网络中游动的任何事物
+				</textarea>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 8.5 二分图问题
+					------
+					- 一个图所有节点可以分为两个独立的集合$U,V$，所有边分别连接两个集合中的一个点，这样就构成了一个<span class="blue">二分图</span>(Bipartite graph) 
+					- 二分图匹配是一类特殊形式的网络流问题，通过构图，利用二分图<span class="blue">最大匹配</span>算法，可以解决图算法中一些问题，例如：
+						- <span class="blue">最小顶点覆盖</span>(最小顶点覆盖数=二分图最大匹配的边数)
+						- <span class="blue">最大独立集</span>(最大独立集点数=总点数-二分图最大匹配边数)
+						- <span class="blue">DAG图最小可相交路径覆盖</span>(DAG图最小可相交路径覆盖数=总点数-二分图最大匹配边数)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 匈牙利算法
+					------
+					- <span class="blue">匈牙利算法</span> ，也称KM(Kuhn–Munkres)算法，是寻找最大匹配的经典算法，
+					主要思想是:
+						- 在已有匹配的情况下，$U$中取未配对的一点$i$，找它连向$V$的边$(i,j)$，如果$j$没有和其他点配对，则将$j$分配给$i$，匹配边数加1
+						- 如果$j$已经和$U$中$k$配对，就对$j$进行递归操作，将$k$换掉，将$j$分配给$i$
+						- 如果可以成功，匹配边数加1，直到所有点都结束匹配
+					- 匹配过程就是网络流问题中找增广路径的过程，每次更新过程称为一次<span class="blue">增广</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2239 -- Selecting Courses (poj.org)](http://poj.org/problem?id=2239)
+					------
+					- 大学有$n$门课，每门课重复$t$次，每次在每周的第$p$天的第$q$时间段上课，
+					求在不冲突的情况下，每周最多可以选多少门课
+					- 分析：
+						- 每周7天，每天12个时间段，共有84个时间段，对应84个节点，增加一个源点$s$连接每个节点，边容量为1，
+					增加一个汇点$t$，每个节点到汇点的容量为1，这样，从$s$到$t$的最大流就是最多可以上课的总数
+						- 在不添加源点和汇点的情况下，$n$门课对应$n$个节点，作为集合$U$，84个时间段作为另一个集合$V$，
+					从$U$集合中的节点到$V$集合中的节点，如果某门课在某个时间段上课，就存在一条边，这就构成了一个二分图
+						- 一个图中，如果其子图中每两条边都没有公共端点，这个子图叫做一个<span class="blue">匹配</span>(Matching)，
+					边数最多的匹配称为<span class="blue">最大匹配</span>(maximal matching)，这个题也可以看成求二分图中的最大匹配问题
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="5-7|9-22|23-33" ><script type="text/template">
+						#include <cstdio>
+						#include <cstring>
+						using namespace std;
+						const int N = 310;
+						int G[N][N];  //记录二分图中边的信息
+						bool vis[N];  //记录是否尝试过
+						int match[N]; //记录配对的序号
+						int n, m;
+						bool DFS(int i)
+						{
+							for (int j = 1; j <= m; j++)
+								if (G[i][j] && !vis[j])
+								{
+									vis[j] = true;
+									if (match[j] == 0 || DFS(match[j]))
+									{
+										match[j] = i;
+										return true;
+									}
+								}
+							return false;
+						}
+						int KM()
+						{
+							int ans = 0;
+							for (int i = 1; i <= n; i++)
+							{
+								memset(vis, 0, sizeof(vis));
+								if (DFS(i))
+									ans++;
+							}
+							return ans;
+						}
+						int main()
+						{
+							while (~scanf("%d", &n))
+							{
+								memset(G, 0, sizeof(G));
+								memset(match, 0, sizeof(match));
+								for (int i = 1; i <= n; i++)
+								{
+									int t;
+									scanf("%d", &t);
+									while (t--)
+									{
+										int p, q;
+										scanf("%d%d", &p, &q);
+										G[i][(p - 1) * 12 + q] = 1;
+									}
+								}
+								m = 84;
+								printf("%d\n", KM());
+							}
+							return 0;
+						}																									
+					</script></code></pre>
+				</section>
+
+
+
+			</section>
+
+
+
+
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>

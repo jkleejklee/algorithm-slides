@@ -1,0 +1,544 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>算法分析与设计II</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/white.css">
+
+	<style>
+		.reveal section {
+			font-weight: normal !important;
+			font-size: 0.9em !important;
+		}
+		.blue {
+			color: blue !important;
+		}
+		.board{
+			background-image: url(img/7-3.png) ;
+			margin: auto;
+			width: 500px;
+			height: 500px;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-markdown>
+				## #7 搜索算法
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					### 搜索问题
+					------
+					- <span class="blue">搜索算法</span>是利用计算机的高性能来有目的地穷举一个问题的部分或所有的可能情况，从而求出问题的解的一种方法
+					- 搜索过程实际上是根据初始条件$S_0$和扩展规则构造一棵解答树并寻找符合目标状态$S_g$的节点的过程
+					- <span class="blue">决策树</span>是机器学习和数据挖掘中一个重要方法
+
+					<span style="float: right;position: relative;top: -100px;">
+
+					![img](img/7-1.png)
+					</span>
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 搜索算法分类
+					------
+
+					![img](img/7-2.png)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 7.1 深度优先搜索
+					------
+					- <span class="blue">深度优先搜索</span>(Depth First Search, DFS)基本思想：从初始状态$S$开始，
+					利用规则生成搜索树下一层任一个结点，检查是否出现目标状态$G$，若未出现，以此状态利用规则生成再下一层任一个结点，
+					再检查是否为目标节点$G$，若未出现，继续以上操作过程，一直进行到叶节点(即不能再生成新状态节点)，
+					当它仍不是目标状态$G$时，<span class="blue">回溯</span>(Backtracking) 到上一层结果，
+					取另一可能扩展搜索的分支。生成新状态节点。若仍不是目标状态，就按该分支一直扩展到叶节点，若仍不是目标，
+					采用相同的回溯办法回退到上层节点，扩展可能的分支生成新状态，……，一直进行下去，直到找到目标状态$G$为止
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1011 -- Sticks (poj.org)](http://poj.org/problem?id=1011)
+					------
+					- George took sticks of the same length and cut them randomly until all parts became at most 50 units long
+					- Now he wants to return sticks to the original state, but he forgot how many sticks he had originally and how long they were originally
+					- Please help him and design a program which computes the smallest possible original length of those sticks
+					- All lengths expressed in units are integers greater than zero
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- 输入：
+						- $5,2,1,5,2,1,5,2,1$
+					- 可能情况：
+						- $24 \ (5+5+5+2+2+2+1+1+1)$
+						- $12 \ (5+5+2,  5+2+2+1+1+1)$
+						- $8 \ \ \ (5+2+1,  5+2+1,  5+2+1)$
+						- $6 \ \ \ (5+1,  5+1,  5+1,  2+2+2)$
+					- 输出：$6$
+					</textarea>
+				</section>				
+				<section  data-markdown>
+					<textarea data-template>
+					###	剪枝
+					------
+					- 搜索本质是暴力枚举，需要去掉一些不符合题意的分支，即在搜索没结束时就提前退出，称为<span class="blue">剪枝</span>(pruning)
+					
+					<pre><code data-trim data-noescape data-line-numbers="21,25-26,31-32,33-34|48-49,51-52" ><script type="text/template">
+						#include <cstdio>
+						#include <algorithm>
+						using namespace std;
+						int n;
+						int a[64];
+						int u[64];
+						int x;
+						bool cmp(const int &x, const int &y)
+						{
+							return x > y;
+						}
+						int DFS(int i, int s, int m)
+						{
+							if (s == x)
+							{
+								if (m == n)
+									return 1;
+								s = 0;
+								i = 0;
+							}
+							for (int k = i; k < n; k++) //剪枝:下次拼接从k=i开始
+							{
+								if (u[k])
+								    continue;
+								if (s + a[k] > x) //剪枝:拼接过程长度不能超过x
+									continue;
+								u[k] = 1;
+								if (DFS(k + 1, s + a[k], m + 1))
+									return 1;
+								u[k] = 0;
+								if (s == 0)
+									return 0; //剪枝:找到结果立即返回上一层
+								while (k < n && a[k + 1] == a[k])
+									k++; //剪枝:相同长度木条不用搜索多次 
+							}
+							return 0;
+						}
+						int main()
+						{
+							while (scanf("%d", &n) && n)
+							{
+								int sum = 0;
+								for (int i = 0; i < n; i++)
+								{
+									scanf("%d", &a[i]);
+									sum += a[i];
+								}
+								sort(a, a + n, cmp); //剪枝:递减排序
+								for (x = a[0]; x <= sum; x++) //剪枝:x介于a[0]和sum之间
+								{
+									if (sum % x) //剪枝:x被sum整除
+									    continue;
+									fill(u, u + n, 0);
+									if (DFS(0, 0, 0))
+									    break;
+								}
+								printf("%d\n", x);
+							}
+							return 0;
+						}							
+					</script></code></pre>
+					</textarea>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 7.2 广度优先搜索
+					------
+					- <span class="blue">广度优先搜索</span>(Breadth First Search, BFS) 基本思想：
+					从初始状态$S$开始，利用规则生成所有可能的状态,构成树的下一层节点，检查是否出现目标状态$G$，若未出现，
+					就对该层所有状态节点，分别顺序利用规则，生成再下一层的所有状态节点，对这一层的所有状态节点检查是否出现$G$，
+					若未出现，继续按上面思想生成再下一层的所有状态节点，这样一层一层往下展开,直到出现目标状态为止
+					- 深度优先搜索(DFS)和广度优先搜索(BFS)，不同的地方：
+						- DFS通常用来求可行解，判断路径是否存在；BFS通常来求最优路径
+						- DFS通常用递归(堆栈)来实现，而BFS通常用队列来实现
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1915 -- Knight Moves (poj.org)](http://poj.org/problem?id=1915)
+					------
+					<div class="board">
+						<img src="img/7-4.png" style="position: absolute;left: 272px; top: 488px;"/>
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1915 -- Knight Moves (poj.org)](http://poj.org/problem?id=1915)
+					------
+					<div class="board">
+						<img src="img/7-4.png" style="position: absolute;left: 330px; top: 375px; "/>
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1915 -- Knight Moves (poj.org)](http://poj.org/problem?id=1915)
+					------
+					<div class="board">
+						<img src="img/7-4.png" style="position: absolute;left: 442px; top: 318px; "/>
+					</div>
+					</textarea>
+				</section>
+				<section data-markdown data-auto-animate>
+					<textarea data-template>
+					###	[1915 -- Knight Moves (poj.org)](http://poj.org/problem?id=1915)
+					------
+					![gif](img/Knight.gif)
+					</textarea>
+				</section>				
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="6-10,13-14|15-33" ><script type="text/template">
+						#include <cstdio>
+						#include <queue>
+						#include <cstring>
+						using namespace std;
+						const int N = 310;
+						const int p[8] = {-1, 1, -2, 2, -2, 2, -1, 1};
+						const int q[8] = {-2, -2, -1, -1, 1, 1, 2, 2};
+						int s[N][N]; 	//保存到该点的步数
+						int l; 		//棋盘尺寸 l * l
+						pair<int, int> a, b; //起点，终点
+						int BFS()
+						{
+							queue<pair<int, int>> Q;
+							Q.push(a);
+							while (!Q.empty())
+							{
+								pair<int, int> i = Q.front();
+								Q.pop();
+								//如果i为终点，则输出到达i点的步数
+								if (i == b)
+									return s[i.first][i.second];
+								//对i点可能到达的8个位置依次进行搜索
+								for (int t = 0; t < 8; t++)
+								{
+									int x = i.first + p[t];
+									int y = i.second + q[t];
+									if (x >= 0 && y >= 0 && x < l && y < l && !s[x][y])
+									{
+										s[x][y] = s[i.first][i.second] + 1;
+										Q.push(pair<int, int>(x, y));
+									}
+								}
+							}
+							return 0;
+						}
+						int main()
+						{
+							int n;
+							scanf("%d", &n);
+							while (n--)
+							{
+								memset(s, 0, sizeof(s));
+								scanf("%d%d%d%d%d", &l, &a.first, &a.second, &b.first, &b.second);
+								printf("%d\n", BFS());
+							}
+							return 0;
+						}													
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 7.3 启发式搜索
+					------
+					- 为了提高深度优先搜索或广度优先搜索的搜索效率，可以采用<span class="blue">启发式搜索</span> ，
+					使用<span class="blue">最好优先贪心算法</span>和<span class="blue">A*搜索算法</span>
+						- 最好优先算法定义一个评估$n$到目标节点的函数$h(n)$，在信息充足的情况下直接选择代价最低的节点
+						- A*算法则通过$g(n)+h(n)$来进行选择，$g(n)$是起点到𝑛点的真实代价，而$h(n)$是$n$到终点的评估代价
+						- 设计合理的$h(n)$就可以提高算法效率并保证找到一条最优路径
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[1077 -- Eight (poj.org)](http://poj.org/problem?id=1077)
+					------
+					
+					![gif](img/8puzzle.gif)
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- 经典的<span class="blue">数字推盘游戏</span>(n-puzzle) 游戏：从初始状态开始，到目标状态，
+					每次有2~4种移动方式，每移动一次，又会产生新的状态，不管是深度优先搜索或者广度优先搜索，
+					搜索的复杂性会逐渐增加，可以采用<span class="blue">最好优先贪心算法</span>，通过设计合理的评估函数$h(n)$，
+					每次计算函数值最优的值进行选择，进而提高算法效率
+					- 九宫格的状态构成了一个字符串序列，采用哈希算法的思想，将该字符串转化成一个数值，便于状态的保存
+					- <span class="blue">康托展开</span>能够将全排列和一个自然数进行映射，正好应用在该问题中，将$x$转换成9，这个字符串里面的字符正好对应1到9全排列中的一个
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="8-25|26-33|34-47|55-67|70-76|77-92" ><script type="text/template">
+						#include <cstdio>
+						#include <queue>
+						#include <cstdlib>
+						#include <cstring>
+						#include <string>
+						using namespace std;
+						const int N = 362890;
+						//康托展开，计算九宫格排列在全排列的顺序
+						int Cantor(char a[])
+						{
+						int fac[] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
+							int res = 0;
+							bool has[10] = {0};
+							for (int i = 0; i < 9; i++)
+							{
+								int x = a[i] - '0';
+								int y = 0;
+								for (int j = 1; j < x; j++)
+									if (!has[j])
+										y++;
+								res += y * fac[8 - i];
+								has[x] = true;
+							}
+							return res;
+						}
+						//评估函数
+						int getH(char a[])
+						{
+							int res = 0;
+							for (int i = 0; i < 9; i++)
+								res += abs(i + 1 - a[i] + '0');
+							return res;
+						}
+						struct Node
+						{
+							string a; //保存当前九宫格状态
+							int k;    //保存空位的位置
+							int g;    //保存当前状态通过康托展开后的顺序值
+							int h;    //保存评估函数的值
+							string s;	//保存到当前状态的移动序列
+							Node(char a[], int b, string c) : 
+								a(a), k(b), g(Cantor(a)), h(getH(a)), s(c) {}
+							bool operator<(const Node &a) const
+							{
+								return h > a.h;
+							}
+						};
+						int main()
+						{
+							int dx[4] = {0, -1, 1, 0};
+							int dy[4] = {1, 0, 0, -1};
+							char d[] = "rudl";
+							bool v[N];
+							priority_queue<Node> Q;
+							char a[9];
+							int b;
+							string c;
+							for (int i = 0; i < 9; i++)
+							{
+								scanf("%c%*c", &a[i]);
+								if (a[i] == 'x')
+								{
+									a[i] = '9';
+									b = i;
+								}
+							}
+							Q.push(Node(a, b, c));
+							while (1)
+							{
+								Node p = Q.top();
+								if (!p.g) //Cantor(“123456789”)=0
+								{
+									puts(p.s.c_str());
+									break;
+								}
+								Q.pop();
+								for (int i = 0; i < 4; i++)
+								{
+									int x = p.k / 3 + dx[i];
+									int y = p.k % 3 + dy[i];
+									if (x < 0 || x > 2 || y < 0 || y > 2)
+										continue;
+									char a[9];
+									strcpy(a, p.a.c_str());
+									swap(a[p.k], a[x * 3 + y]);
+									Node q = Node(a, x * 3 + y, p.s + d[i]);
+									if (!v[q.g])
+									{
+										Q.push(q);
+										v[q.g] = true;
+									}
+								}
+							}
+							return 0;
+						}																			
+					</script></code></pre>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<textarea data-template>
+					## 7.4 组合博弈
+					------
+					- 一个典型的<span class="blue">组合博弈</span>(Combinatorial game)问题，具有以下特征：
+						1. 两个玩家(player)
+						2. 游戏中有有限个可能的状态(position)
+						3. 两个玩家遵从游戏规则，如果双方平等，称为无偏博弈(Impartial game) 
+						4. 两个玩家轮流行动
+						5. 游戏到无法行动结束，通常情况下最后一个行动者获胜；如果是最后一个无法行动的玩家获胜，则称为Misère game；避免出现游戏结束不了造成的平局，会添加一个结束条件
+						6. 游戏在有限次行动后结束
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					### 算法
+					------
+					- 解决组合博弈问题，定义以下概念：
+						- 必败点(P-positions):使前一个玩家获胜的位置
+						- 必胜点(N-positions):使即将行动的玩家获胜的位置
+						- 结束点(terminal position)：无法继续行动的位置
+					- 有了以上定义，执行如下算法：
+						1. 结束点为必败点
+						2. 通过一次行动可以到达必败点的为必胜点
+						3. 一次行动只能到达必胜点的为必败点
+						4. 在3中无法找到新的必败点，就结束；否则转向2
+					
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2368 -- Buttons (poj.org)](http://poj.org/problem?id=2368)
+					------
+					- 一个游戏有两个玩家，有一堆纽扣，数量是$k$，两个玩家轮流从纽扣堆中取走纽扣，每次取走至少1个，最多$n$个，取走最后一个纽扣者获胜
+					- 现在第二个取纽扣的玩家来决定$n$是多少，要求$2 \leq n < k$
+					- 问为了保证第二个玩家获胜，$n$的值最小是多少，如果找不到，$n$就为0
+					- 例如:3个纽扣，令$n=2$，则第一位玩家取1，第二位玩家取2；而第一位玩家取2，第二位玩家取1，第二位玩家都可以获胜
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	分析
+					------
+					- <span class="blue">取子游戏</span>(subtraction game)
+						1. 初始条件：1堆纽扣，数量为$k$
+						2. 游戏规则：每次取走1到$n$个纽扣$(2\leq n < k)$
+						3. 获胜条件：最后一个取走纽扣的玩家获胜
+					- $n=3$时,按照算法，0为结束点，是必败点(P)；1,2,3可以分别通过取1,2,3个纽扣到达0的位置，
+						所以它们是必胜点(N)；4无论取几个纽扣，到达的都是N点，所以4为必败点，依此类推，如图所示
+						
+					![img](img/7-5.png)
+					- 不难发现，凡是$n+1$整数倍的位置都是P点，其他位置是N点,第二位玩家获胜，只需将$n$设置为$k\\%(n+1)=0$即可
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="7-17" ><script type="text/template">
+						#include <cstdio>
+						using namespace std;
+						int main()
+						{
+							int k;
+							scanf("%d", &k);
+							int n = 2;
+							//寻找使k%(n+1)=0的n值，计算到√k
+							while (n * n < k && k % (n + 1))
+								n++;
+							//如果到√k还没找到，对于大于4的偶数，n=k/2-1，奇数n=k-1
+							if (n * n >= k)
+							{
+								if (k > 4 && !(k & 1))
+									k = k / 2;
+								n = k - 1;
+							}
+							printf("%d\n", n);
+							return 0;
+						}																			
+					</script></code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+					###	[2975 -- Nim (poj.org)](http://poj.org/problem?id=2975)
+					------
+					- <span class="blue">Nim游戏</span> 
+						1. 初始条件：$n$堆石子，第$i$堆石子的数量为$k[i]$
+						2. 游戏规则：选择任意一堆，从该堆取走1个以上石子
+						3. 获胜条件：所有石子被取走，最后一个取石子的玩家获胜
+					- 每堆的剩余数量$k[i]$用二进制表示，当且仅当所有的$k[i]$进行异或运算的结果为0时是必败点，
+					即$k[1]⊕k[2]⊕\ldots ⊕k[n]=0$
+					- 例如3堆石子，数量为$7,11,13$，转化为二进制进行异或运算：$(111)_2⊕(1011)_2⊕(1101)_2=(1)_2$，所以此位置是必胜点
+					- 本题求Nim游戏中，给定初始状态下，能够获胜的取子方法有几种
+					</textarea>
+				</section>
+				<section>
+					<pre><code data-trim data-noescape data-line-numbers="8,9,11-18" ><script type="text/template">
+						#include <cstdio>
+						using namespace std;
+						int main()
+						{
+							int n;
+							while (scanf("%d", &n) && n)
+							{
+								int k[1001]; //石子数量
+								int s = 0;   //保存异或和
+								int ans = 0;
+								for (int i = 0; i < n; i++)
+								{
+									scanf("%d", &k[i]);
+									s ^= k[i];
+								}
+								for (int i = 0; i < n; i++)
+									if ((s ^ k[i]) < k[i])
+										ans++;
+								printf("%d\n", ans);
+							}
+							return 0;
+						}																	
+					</script></code></pre>
+				</section>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/math/math.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+		});
+	</script>
+</body>
+
+</html>
