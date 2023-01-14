@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="dist/theme/white.css">
 
 	<!-- Theme used for syntax highlighted code -->
-	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	<link rel="stylesheet" href="plugin/highlight/vs.min.css">
 </head>
 
 <body>
@@ -100,17 +100,16 @@
 						- 每次查找的时候，可以将查找路径上的节点修改成指向根节点，以便下次查找的时候速度更快
 						- 路径压缩的效果如图所示，(a)为压缩前，(b)为压缩后<br/><br/>
 						   
-						
-					```c
-					int Find(int x)
-					{
-						if(p[x] < 0)
-							return x;
-						p[x] = Find(p[x]);
-						return p[x];
-					}
-					```
-					<span style="float: right;position: relative;right: 20px; bottom: 250px;">
+						<pre style="width: 35%; float: left;"><code class="language-c++" data-trim data-noescape>
+						int Find(int x)
+						{
+							if(p[x] < 0)
+								return x;
+							p[x] = Find(p[x]);
+							return p[x];
+						}
+						</code></pre>
+					<span style="float: right;position: relative;right: 20px; bottom: 300px;">
 					
 					![img](img/6-2.png)	
 					</div>
@@ -1028,7 +1027,8 @@
 		// - https://revealjs.com/config/
 		Reveal.initialize({
 			hash: true,
-			slideNumber: true,
+			slideNumber: 'c/t',
+			transition: 'none',
 			width: 1024, 
 			height: 768,
 			// Learn about plugins: https://revealjs.com/plugins/

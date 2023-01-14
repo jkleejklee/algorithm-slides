@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="dist/theme/white.css">
 
 	<!-- Theme used for syntax highlighted code -->
-	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	<link rel="stylesheet" href="plugin/highlight/vs.min.css">
 </head>
 
 <body>
@@ -309,7 +309,7 @@
 					</textarea>
 				</section>
 				<section>
-					<pre><code data-trim data-noescape data-line-numbers="5-27|28-37,46" ><script type="text/template">
+					<pre><code class="language-c++" data-trim data-noescape data-line-numbers="5-27|28-37,46" ><script type="text/template">
 						#include <cstdio>
 						using namespace std;
 						const int N = 500005;
@@ -463,7 +463,7 @@
 							{
 								double sum = 0;
 								for (int i = 0; i < n; ++i)
-							sum += sqrt((x1 - x[i]) * (x1 - x[i]) + (y1 - y[i]) * (y1 - y[i]));
+									sum += sqrt((x1 - x[i]) * (x1 - x[i]) + (y1 - y[i]) * (y1 - y[i]));
 								return sum;
 							}
 							//对点的y值进行三分搜索，找到每个固定点x1值对应的使距离和最小的y值
@@ -517,7 +517,8 @@
 		// - https://revealjs.com/config/
 		Reveal.initialize({
 			hash: true,
-			slideNumber: true,
+			slideNumber: 'c/t',
+			transition: 'none',
 			width: 1024, 
 			height: 768,
 
