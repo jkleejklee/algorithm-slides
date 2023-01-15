@@ -35,7 +35,8 @@
 					<textarea data-template>
 					### 搜索问题
 					------
-					- <span class="blue">搜索算法</span>是利用计算机的高性能来有目的地穷举一个问题的部分或所有的可能情况，从而求出问题的解的一种方法
+					<blockquote><span class="blue">搜索算法</span>是利用计算机的高性能来有目的地穷举一个问题的部分或所有的可能情况，从而求出问题的解的一种方法</blockquote>
+					
 					- 搜索过程实际上是根据初始条件$S_0$和扩展规则构造一棵解答树并寻找符合目标状态$S_g$的节点的过程
 					- <span class="blue">决策树</span>是机器学习和数据挖掘中一个重要方法
 
@@ -91,9 +92,7 @@
 				</section>				
 				<section  data-markdown>
 					<textarea data-template>
-					###	剪枝
-					------
-					- 搜索本质是暴力枚举，需要去掉一些不符合题意的分支，即在搜索没结束时就提前退出，称为<span class="blue">剪枝</span>(pruning)
+					- <span class="blue">剪枝</span>(pruning):去掉不符合题意的分支，在搜索没结束时就提前退出
 					
 					<pre><code data-trim data-noescape data-line-numbers="21,25-26,31-32,33-34|48-49,51-52" ><script type="text/template">
 						#include <cstdio>
@@ -200,14 +199,7 @@
 						<img src="img/7-4.png" style="position: absolute;left: 440px; top: 340px; "/>
 					</div>
 					</textarea>
-				</section>
-				<section data-markdown data-auto-animate>
-					<textarea data-template>
-					###	[1915 -- Knight Moves (poj.org)](http://poj.org/problem?id=1915)
-					------
-					![gif](img/Knight.gif)
-					</textarea>
-				</section>				
+				</section>			
 				<section>
 					<pre><code data-trim data-noescape data-line-numbers="6-10,13-14|15-33" ><script type="text/template">
 						#include <cstdio>

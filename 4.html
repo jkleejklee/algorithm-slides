@@ -26,8 +26,8 @@
 					<textarea data-template>
 					## 4.1 基础动态规划问题
 					------
-					- 动态规划的一个特征是问题有<span class="blue">重叠的子问题</span>，与分治算法类似，可以将原问题分解为子问题，使用相同的规则进行求解
-					- 动态规划的另一个重要特征是<span class="blue">最优子结构</span>(Optimal substructure) ，依据的是贝尔曼最优化原理(Bellman's principle of optimality) ：
+					1. 动态规划的一个特征是问题有<span class="blue">重叠的子问题</span>，与分治算法类似，可以将原问题分解为子问题，使用相同的规则进行求解
+					2. 动态规划的另一个重要特征是<span class="blue">最优子结构</span>(Optimal substructure) ，依据的是贝尔曼最优化原理(Bellman's principle of optimality) ：
 					作为整个过程的最优策略具有这样的性质，无论过去的状态和决策如何，对先前决策所形成的状态而言，余下的诸决策必构成最优策略
 					- 以上两点也是判断一个问题是否适用动态规划的主要依据
 					</textarea>
@@ -114,7 +114,7 @@
 					<textarea data-template>
 
 					![img](img/4-a.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_4(D_1)=d(D_1\rightarrow E)+f_5(E)=5+0=5$$
 					最优决策：$D_1\rightarrow E$ 
 					</span>
@@ -124,7 +124,7 @@
 					<textarea data-template>
 					
 					![img](img/4-b.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_4(D_2)=d(D_2\rightarrow E)+f_5(E)=2+0=5$$
 					最优决策：$D_2\rightarrow E$ 
 					</span>
@@ -134,7 +134,7 @@
 					<textarea data-template>
 					
 					![img](img/4-c.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_3(C_1)=min \begin{Bmatrix}(C_1,D_1)+f_4(D_1)\\\ (C_1,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}3+5\\\ 9+2 \end{Bmatrix} =8$$
 					最优决策：$C_1\rightarrow D_1$
 					</span>
@@ -144,7 +144,7 @@
 					<textarea data-template>
 
 					![img](img/4-d.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_3(C_2)=min \begin{Bmatrix}(C_2,D_1)+f_4(D_1)\\\ (C_2,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}6+5\\\ 5+2 \end{Bmatrix} =7$$
 					最优决策：$C_2\rightarrow D_2$
 					</span>
@@ -154,7 +154,7 @@
 					<textarea data-template>
 
 					![img](img/4-e.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_3(C_3)=min \begin{Bmatrix}(C_3,D_1)+f_4(D_1)\\\ (C_3,D_2)+f_4(D_2) \end{Bmatrix} =min \begin{Bmatrix}8+5\\\ 10+2 \end{Bmatrix} =12$$
 					最优决策：$C_3\rightarrow D_2$
 					</span>
@@ -164,7 +164,7 @@
 					<textarea data-template>
 
 					![img](img/4-f.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_2(B_1)=min \begin{Bmatrix}(B_1,C_1)+f_3(C_1)\\\ (B_1,C_2)+f_3(C_2)\\\ (B_1,C_3)+f_3(C_3) \end{Bmatrix} =min \begin{Bmatrix}12+8\\\ 14+7\\\ 10+12 \end{Bmatrix} =20$$
 					最优决策：$B_1\rightarrow C_1$
 					</span>
@@ -174,7 +174,7 @@
 					<textarea data-template>
 
 					![img](img/4-g.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_2(B_3)=min \begin{Bmatrix}(B_3,C_1)+f_3(C_1)\\\ (B_3,C_2)+f_3(C_2)\\\ (B_3,C_3)+f_3(C_3) \end{Bmatrix} =min \begin{Bmatrix}13+8\\\ 12+7\\\ 11+12 \end{Bmatrix} =19$$
 					最优决策：$B_3\rightarrow C_2$
 					</span>
@@ -184,7 +184,7 @@
 					<textarea data-template>
 
 					![img](img/4-h.png)
-					<span class="small">
+					<span class="smallc">
 					$$f_1(A)=min \begin{Bmatrix}(A,B_1)+f_2(B_1)\\\ (A,B_2)+f_2(B_2)\\\ (A,B_3)+f_2(B_3) \end{Bmatrix} =min \begin{Bmatrix}2+21\\\ 5+14\\\ 1+19 \end{Bmatrix} =19$$
 					最优决策：$A\rightarrow B_2$
 					</span>
@@ -194,8 +194,10 @@
 					<textarea data-template>
 
 					![img](img/4-i.png)
-					- 从$A$到$E$的最短路径为19
-					- 路线为$A\rightarrow B_2\rightarrow C_1 \rightarrow D_1 \rightarrow E$ 
+					<span class="smallc">
+					$$A\rightarrow B_2\rightarrow C_1 \rightarrow D_1 \rightarrow E$$
+					为$A$到$E$的最短路径，长度19
+					</span>
 					</textarea>
 				</section>
 				<section data-markdown>
@@ -318,11 +320,6 @@
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-					- 其他情况
-						1. 最长不降子序列长度，改成`a[j]≤a[i]` 
-						2. 最长递减子序列长度，改成`a[j]>a[i]` 
-						3. 最长不升子序列长度，改成`a[j]≥a[i]` 
-
 					<pre><code data-trim data-noescape data-line-numbers="10-20" ><script type="text/template">
 							#include <cstdio>
 							#include <algorithm>
@@ -348,6 +345,12 @@
 							  return 0;
 							}
 					</script></code></pre>
+					<pre><code data-trim data-noescape >
+					其他情况对第17行做如下修改：
+					a[j]≤a[i]	// 最长不降子序列长度
+					a[j]>a[i]	// 最长递减子序列长度
+					a[j]≥a[i]	// 最长不升子序列长度
+					</code></pre>
 					</textarea>
 				</section>	
 				<section data-markdown>
@@ -387,9 +390,11 @@
 					<textarea data-template>
 					## 4.3 最长公共子串问题
 					------
-					- <span class="blue">最长公共子序列 </span>(Longest Common Subsequence, LCS) 
-					是在一个序列集合中(通常为两个序列)查找所有序列中最长子序列的问题
-					- 两个序列通常为两个字符串，此类问题也称为求<span class="blue">最长公共子串</span>问题
+					<blockquote>
+					<span class="blue">最长公共子序列 </span>(Longest Common Subsequence, LCS) 
+					是在一个序列集合中(通常为两个序列)查找所有序列中最长子序列的问题<br/><br/>
+					两个序列通常为两个字符串，此类问题也称为求<span class="blue">最长公共子串</span>问题
+					</blockquote>
 					</textarea>
 				</section>
 				<section data-markdown>
@@ -458,8 +463,12 @@
 					<textarea data-template>
 					## 4.4 背包问题
 					------
-					- 一组物品具有重量和价格，在规定的总重量内，如何选择，使得价格最高，被称为<span class="blue">背包问题</span>(Knapsack problem)
-					- 这里对几类简单的背包问题进行研究。背包问题的详细分析和其他扩展问题，详见[背包问题九讲 (github.com)](https://github.com/tianyicui/pack)
+					<blockquote>
+					一组物品具有重量和价格，在规定的总重量内，如何选择，使得价格最高，被称为<span class="blue">背包问题</span>(Knapsack problem)
+					</blockquote>
+
+					- 这里对几类简单的背包问题进行研究
+					- 背包问题的详细分析和其他扩展问题，详见[背包问题九讲 (github.com)](https://github.com/tianyicui/pack)
 					</textarea>
 				</section>
 				<section data-markdown>
@@ -503,7 +512,8 @@
 					<textarea data-template>
 					###	0-1背包问题
 					------
-					- <span class="blue">0-1背包问题</span>: 每种物品仅有一件，可以选择放或不放
+					<blockquote><span class="blue">0-1背包问题</span>: 每种物品仅有一件，可以选择放或不放</blockquote>
+
 					- 用动态规划来求解背包问题，通过子问题定义状态：即$F[i,v]$表示前$i$件物品恰放入一个容量为$v$的背包可以获得的最大价值，
 					则当前最优解要么包含第$i$种物品，要么不包含第$i$种物品，状态转移方程:
 					$$F[i,v]=\max\begin{cases} F[i-1,v] \\\ F[i-1,v-c[i]+w[i]] \end{cases} $$
@@ -570,7 +580,8 @@
 					<textarea data-template>
 					###	完全背包问题
 					------
-					- <span class="blue">完全背包问题</span>: 有$n$种物品和一个容量为$V$的背包，每种物品都有无限件可用
+					<blockquote><span class="blue">完全背包问题</span>: 有$n$种物品和一个容量为$V$的背包，每种物品都有无限件可用</blockquote>
+
 					- 在0-1背包基础上，将添加第$i$件物品的情况考虑到已经选择过第$i$件物品的情况。
 						- 0-1背包：$v=V\rightarrow 0$,保证每件物品选一次
 						- 完全背包：$v=0\rightarrow V$,每种物品可选无限件
@@ -624,17 +635,17 @@
 					------
 					- 有$N$台提款机，每台提款机提供不同数量$n_i$和面值$D_i$的货币，求这些机器能提取的不超过指定限额$cash$的最大金额
 
+					<span class="smallc">
+
 					| $cash$ | $N$    | $n_1$   | $D_1$   | $n_2$   | $D_2$   | $n_3$   | $D_3$   | $n_N$   | $D_N$   |
 					| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
 					| 735  | 3    | 4    | 125  | 6    | 5    | 3    | 350  |      |      |
 					| 633  | 4    | 500  | 30   | 6    | 100  | 1    | 5    | 0    | 1    |
-
-					<span class="blue">
-
-					| $output$ | $n_1$   | $D_1$   | $n_2$   | $D_2$   | $n_3$   | $D_3$   | $n_N$   | $D_N$   |
-					| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+					| $\ldots$ | $\ldots$ | $\ldots$ | $\ldots$ | $\ldots$ |  |  |  |  |
+					| 输出| $n_1$   | $D_1$   | $n_2$   | $D_2$   | $n_3$   | $D_3$   | $n_N$   | $D_N$   |
 					| 735  | 3    | 125  | 2    | 5    | 1    | 350  |      |      |
 					| 630  | 1  | 30   | 6    | 100  | 0    | 5    | 0    | 1    |
+					| $\ldots$ | $\ldots$ | $\ldots$ | $\ldots$ | $\ldots$ |  |  |  |  |
 					</span>
 					</textarea>
 				</section>
@@ -642,11 +653,12 @@
 					<textarea data-template>
 					###	多重背包问题
 					------
-					- <span class="blue">多重背包问题</span>: 一种物品有$m$个(既不是固定的1个，也不是无数个)
+					<blockquote><span class="blue">多重背包问题</span>: 一种物品有$m$个(既不是固定的1个，也不是无数个)</blockquote>
+
 					- 多重背包$c$为费用，$w$为价值，$m$为数量
 						- 当$c\times m$超过$V$，直接采用完全背包
-						- 否则将$m$进行拆分，拆分成$1,2,4,…,2^k-1,𝑚−(2^k-1)$
-					- 然后进行0-1背包
+						- 否则将$m$进行拆分，拆分成$$1,2,4,…,2^k-1,𝑚−(2^k-1)$$
+						- 然后进行0-1背包
 					- 例如$m=13$，拆成$1,2,4,6$
 					
 					</textarea>

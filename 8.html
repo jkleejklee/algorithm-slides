@@ -39,8 +39,9 @@
 					###	[1258 -- Agri-Net (poj.org)](http://poj.org/problem?id=1258)
 					------
 					- 有$n$个农场，给出相互之间的距离，用光纤将所有农场连接在一起，问如何连接使光纤总长度最小，求出这个最小值。
-					即在$n$个点，$\frac {n(n-1)}{2}$条边组成的连通加权无向图中求最小生成树，本题使用<span class="blue">Prim算法</span> 
-					- Prim(普里姆)算法使用的是贪心策略，从单一顶点开始，依次加入其他顶点，保证加入的边长度最小，直到包含所有顶点结束
+					即在$n$个点，$\frac {n(n-1)}{2}$条边组成的连通加权无向图中求最小生成树，本题使用Prim算法
+					<blockquote><span class="blue">Prim算法</span> 使用的是贪心策略，从单一顶点开始，依次加入其他顶点，保证加入的边长度最小，直到包含所有顶点结束</blockquote>
+
 						- 定义二维数组D[i,j]为i到j的距离，在图论中，这种图结构的表示方法叫做<span class="blue">邻接矩阵</span>(adjacency matrix)
 						- 用结构体edge{v,to}来表示图中的边(v为边权，to为边的终点）
 						- 定义vis[i]记录i点是否已经加入生成树中
@@ -122,9 +123,9 @@
 					<textarea data-template>
 					###	[2485 -- Highways (poj.org)](http://poj.org/problem?id=2485)
 					------
-					- 给出$n$个城镇相互之间的距离，用高速公路连接所有城镇，求需要修建总长度最短的高速公路的方案中最长的一段公路的长度，本题使用<span class="blue">Kruskal算法</span> 
-					- Kruskal(克鲁斯克尔)算法使用的是贪心策略，将所有的边按长度递增排序，每次取一条边，如果没有形成回路，
-					就将这条边放入生成树中，直到检查完所有的边
+					- 给出$n$个城镇相互之间的距离，用高速公路连接所有城镇，求需要修建总长度最短的高速公路的方案中最长的一段公路的长度，本题使用Kruskal算法 
+					<blockquote><span class="blue">Kruskal算法</span> 使用的是贪心策略，将所有的边按长度递增排序，每次取一条边，如果没有形成回路，
+					就将这条边放入生成树中，直到检查完所有的边</blockquote>
 					- 用结构体edge{u,v,w}来表示图中的边(u，v为边的两个端点，w为边的长度）
 					- 是否存在回路的判断，可以使用[并查集](6.html#/1)来实现
 					</textarea>
@@ -218,14 +219,15 @@
 					<textarea data-template>
 					## 8.2 最短路
 					------
-					- 在图中寻找两个节点之间的最短路径，称为<span class="blue">最短路径问题</span>(Shortest path problem)
+					<blockquote>在图中寻找两个节点之间的最短路径，称为<span class="blue">最短路径问题</span>(Shortest path problem)</blockquote>
+
 					- 求最短路有以下几种常见的算法:
 						- 弗洛伊德(Floyd-Warshall)算法
 						- 贝尔曼-福特(Bellman–Ford)算法
 						- 最短路径快速算法(SPFA)
 						- 迪杰斯特拉(Dijkstra)算法
 
-
+					<span class="smallc">
 
 					| 算法    | 代码中采用的数据结构 | 时间复杂度($V$:点数;$E$:边数) |
 					| ------------ | ------------------------ | ------------------------- |
@@ -233,7 +235,7 @@
 					| Bellman-Ford | 邻接表                   | $O(VE)$                     |
 					| SPFA         | 链式前向星               | 平均$O(2E)$，最差$O(VE)$      |
 					| Dijkstra     | 邻接矩阵、链式前向星     | $O(V^2)$，可进一步优化       |
-
+					</span>
 					</textarea>
 				</section>
 				<section data-markdown>
@@ -439,10 +441,6 @@
 				</section>
 				<section data-markdown>
 					<textarea data-template>
-					- 求最短路径的话，需要修改代码中标记的两个地方：
-						1. 每次取$D$值最小的点$u$，即`t≥D[i]`
-						2. 松弛操作`D[v]=min(D[v],min(D[u],a[u][v]))`
-
 					<pre><code data-trim data-noescape data-line-numbers="7-28" ><script type="text/template">
 						#include <cstdio>
 						#include <cstring>
@@ -493,6 +491,10 @@
 							return 0;
 						}																										
 					</script></code></pre>
+					<pre><code data-trim data-noescape>
+						if (t >= D[j] && !vis[j])		// 21行：求最短路径的话，每次取D值最小的点u
+						D[v]=min(D[v],min(D[u],a[u][v])) // 26行：松弛操作
+						</code></pre>
 				</textarea>
 				</section>
 			</section>
@@ -501,9 +503,10 @@
 					<textarea data-template>
 					## 8.3 图的连通性
 					------
-					- 如果图中任意两点都是连通的，那么图被称作<span class="blue">连通图</span> 
-					- <span class="blue">强连通分量</span>(Strongly connected component)，是图的一个子图，里面的所有点构成一个强连通图，
-					即每一个顶点都可以通过图中的边到达图中其他的顶点，且这个连通子图是极大的，也就是子图外不再包含符合该条件的点
+					<blockquote>如果图中任意两点都是连通的，那么图被称作<span class="blue">连通图</span> </blockquote>
+					<blockquote><span class="blue">强连通分量</span>(Strongly connected component)，是图的一个子图，里面的所有点构成一个强连通图，
+					即每一个顶点都可以通过图中的边到达图中其他的顶点，且这个连通子图是极大的，也就是子图外不再包含符合该条件的点</blockquote>
+					
 					- 在图的规模较小时，可以模仿Floyd算法对所有边进行枚举，但是深入理解<span class="blue">Tarjan算法</span>，了解low和dfn的含义，能够更有效的解决图的连通性问题
 					</textarea>
 				</section>
@@ -666,7 +669,7 @@
 						2. 无需对每个节点都进行一次深度优先搜索，选中一点作为起始节点即可
 						3. 因为无向图的边是双向的，在找$u$点的后序节点时，需要避免访问$u$的父亲节点
 						4. 对起始节点需要特殊判断，如果遍历过程中它的子节点超过1个，则它也是一个割点，如上图右图，1位置为起始节点的话不是割点，而2位置为起始节点，它的子节点有3个，所以它是割点
-					- 代码中low[v]≥dfn[u]时说明v点能够追溯到的最早节点编号是$u$点或者$u$点之后，所以$u$为割点；如果改成low[v]>dfn[u]，说明$v$点能够追溯到的最早节点编号在$u$点之后，意味着去掉边$(u,v)$后图不再连通，$(u,v)$就是一个桥
+					- low[v]≥dfn[u]时说明v点能够追溯到的最早节点编号是$u$点或者$u$点之后，所以$u$为割点；如果改成low[v]>dfn[u]，说明$v$点能够追溯到的最早节点编号在$u$点之后，意味着去掉边$(u,v)$后图不再连通，$(u,v)$就是一个桥
 					
 					</textarea>
 				</section>				
@@ -748,7 +751,8 @@
 				<textarea data-template>
 				## 8.4 网络流问题
 				------
-				- 在图论中，<span class="blue">网络流</span>(Network flow)是指在一个每条边都有容量（Capacity）的有向图分配流，使一条边的流量不会超过它的容量
+				<blockquote>在图论中，<span class="blue">网络流</span>(Network flow)是指在一个每条边都有容量（Capacity）的有向图分配流，每条边的流量不会超过它的容量</blockquote>
+				
 				- 通常在运筹学中，有向图称为网络。顶点称为<span class="blue">节点</span>（Node）而边称为<span class="blue">弧</span>（Arc）
 				- 一道流必须符合一个结点的进出的流量相同的限制，
 				除非这是：
@@ -762,7 +766,8 @@
 					<textarea data-template>
 					## 8.5 二分图问题
 					------
-					- 一个图所有节点可以分为两个独立的集合$U,V$，所有边分别连接两个集合中的一个点，这样就构成了一个<span class="blue">二分图</span>(Bipartite graph) 
+					<blockquote>一个图所有节点可以分为两个独立的集合$U,V$，所有边分别连接两个集合中的一个点，这样就构成了一个<span class="blue">二分图</span>(Bipartite graph)</blockquote>
+					 
 					- 二分图匹配是一类特殊形式的网络流问题，通过构图，利用二分图<span class="blue">最大匹配</span>算法，可以解决图算法中一些问题，例如：
 						- <span class="blue">最小顶点覆盖</span>(最小顶点覆盖数=二分图最大匹配的边数)
 						- <span class="blue">最大独立集</span>(最大独立集点数=总点数-二分图最大匹配边数)
